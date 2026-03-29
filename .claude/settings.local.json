@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(python build_wiki.py)",
+      "Bash(curl -s http://localhost:8765/search_index.json)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(f''''{len\\(d\\)} docs, first: {d[0][\"\"title\"\"]}''''\\)\")",
+      "Bash(curl -s http://localhost:8765/docs/example-doc.md)",
+      "Bash(python -m http.server 8765 -d _site)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

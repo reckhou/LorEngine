@@ -170,7 +170,7 @@ def strip_markdown(text):
 # ---------------------------------------------------------------------------
 
 def load_config(root):
-    """Load config.yml and return parsed dict with defaults."""
+    """Load config.yml and return (parsed dict with defaults, defaults dict)."""
     config_path = root / "config.yml"
     defaults = {
         "wiki": {
@@ -191,11 +191,15 @@ def load_config(root):
         "github_pages": {
             "base_url": "",
         },
+        "branding": {
+            "favicon": "",
+            "logo": "",
+        },
     }
 
     if not config_path.exists():
         print("Warning: config.yml not found, using defaults")
-        return defaults
+        return defaults, defaults
 
     raw = config_path.read_text(encoding="utf-8")
     parsed = parse_yaml(raw)
@@ -209,7 +213,92 @@ def load_config(root):
                 if key not in parsed[section]:
                     parsed[section][key] = val
 
-    return parsed
+    return parsed, defaults
+
+
+def validate_config(parsed, defaults):
+    """Warn on unknown top-level config keys."""
+    valid_keys = set(defaults.keys())
+    for key in parsed.keys():
+        if key not in valid_keys:
+            print(f"Warning: unknown config key '{key}' (not in defaults)")
+
+
+# ---------------------------------------------------------------------------
+# Hierarchy and backlinks
+# ---------------------------------------------------------------------------
+
+def compute_hierarchy(entries):
+    """Build parent/child relationships from folder structure.
+
+    For a doc at docs/a/b/c.md, parent is docs/a/b.md if it exists.
+    Adds 'parent' (None for top-level) and 'children' (list of doc IDs) to each entry.
+    """
+    # Create a lookup map: path -> entry
+    id_map = {entry["id"]: entry for entry in entries}
+
+    for entry in entries:
+        doc_path = Path(entry["id"])
+
+        # Compute parent: remove filename, check if a .md exists at that level
+        parent_path = doc_path.parent
+        potential_parent = parent_path / parent_path.name / ".md" if parent_path.name else None
+
+        # Actually, simpler: for docs/a/b/c.md, parent is docs/a/b.md
+        # Get the parent folder path and construct the parent doc path
+        doc_parts = Path(entry["id"]).parts  # e.g., ('docs', 'a', 'b', 'c.md')
+
+        if len(doc_parts) > 2:  # More than just 'docs/file.md'
+            # Parent is at same folder level with folder name as .md
+            parent_id = str(Path(*doc_parts[:-1]).with_name(doc_parts[-2] + ".md")).replace("\\", "/")
+            entry["parent"] = parent_id if parent_id in id_map else None
+        else:
+            entry["parent"] = None
+
+        # Initialize children list
+        entry["children"] = []
+
+    # Populate children
+    for entry in entries:
+        if entry["parent"]:
+            parent_entry = id_map.get(entry["parent"])
+            if parent_entry:
+                parent_entry["children"].append(entry["id"])
+
+    return entries
+
+
+def compute_backlinks(entries):
+    """Scan all doc bodies for markdown links and populate backlinks.
+
+    Looks for [text](docs/...) patterns and adds referencing doc IDs to backlinks.
+    """
+    # Create a lookup map
+    id_map = {entry["id"]: entry for entry in entries}
+
+    # Initialize backlinks list for all entries
+    for entry in entries:
+        entry["backlinks"] = []
+
+    # Scan each doc's body for links
+    for entry in entries:
+        # Find all markdown links: [text](path)
+        links = re.findall(r"\[([^\]]+)\]\(([^)]+)\)", entry["body"])
+        for _, link_target in links:
+            # Normalize path (remove leading ./ and trailing /)
+            normalized = link_target.strip("./").rstrip("/")
+
+            # Check if this is a doc link (starts with 'docs/')
+            if normalized.startswith("docs/"):
+                # Make sure it has .md extension
+                if not normalized.endswith(".md"):
+                    normalized = normalized + ".md"
+
+                # If target exists, add this doc to its backlinks
+                if normalized in id_map:
+                    id_map[normalized]["backlinks"].append(entry["id"])
+
+    return entries
 
 
 # ---------------------------------------------------------------------------
@@ -278,6 +367,11 @@ def assemble_site(root, config, search_index):
     if docs_dir.exists():
         shutil.copytree(docs_dir, site_dir / "docs")
 
+    # Copy docs/assets/ into _site/assets/ if it exists
+    assets_dir = docs_dir / "assets" if docs_dir.exists() else None
+    if assets_dir and assets_dir.exists():
+        shutil.copytree(assets_dir, site_dir / "assets")
+
     # Write search_index.json into _site/
     index_path = site_dir / "search_index.json"
     index_path.write_text(
@@ -299,6 +393,8 @@ def assemble_site(root, config, search_index):
         "{{SEARCH_MAX_RESULTS}}": str(config["search"]["max_results"]),
         "{{SEARCH_EXCERPT_LENGTH}}": str(config["search"]["excerpt_length"]),
         "{{ANTHROPIC_API_KEY}}": api_key,
+        "{{BRANDING_FAVICON}}": str(config["branding"].get("favicon", "")),
+        "{{BRANDING_LOGO}}": str(config["branding"].get("logo", "")),
     }
 
     # Inject into HTML and JS files
@@ -322,14 +418,20 @@ def main():
     print("Lorengine build starting...")
 
     # 1. Load config
-    config = load_config(root)
+    config, defaults = load_config(root)
+    validate_config(config, defaults)
     print(f"  Wiki: {config['wiki']['title']}")
 
     # 2. Build search index
     search_index = build_search_index(root)
     print(f"  Indexed {len(search_index)} document(s)")
 
-    # 3. Write search_index.json to repo root (committed artifact)
+    # 3. Compute hierarchy and backlinks
+    search_index = compute_hierarchy(search_index)
+    search_index = compute_backlinks(search_index)
+    print(f"  Computed hierarchy and backlinks")
+
+    # 4. Write search_index.json to repo root (committed artifact)
     index_path = root / "search_index.json"
     index_path.write_text(
         json.dumps(search_index, indent=2, ensure_ascii=False),
@@ -337,7 +439,7 @@ def main():
     )
     print(f"  Wrote {index_path}")
 
-    # 4. Assemble _site/
+    # 5. Assemble _site/
     site_dir = assemble_site(root, config, search_index)
     print(f"  Assembled site in {site_dir}")
 

@@ -16,3 +16,7 @@ search:
 
 github_pages:
   base_url: ""
+
+branding:
+  favicon: ""
+  logo: ""
