@@ -1,4 +1,9 @@
 # config.yml — edit this in your fork, not in upstream
+
+# Folder scanned for wiki pages (relative to repo root). Defaults to "pages".
+# Set to "docs" if you prefer the old layout.
+pages_dir: "pages"
+
 wiki:
   title: "My Wiki"
   description: "A Lorengine-powered wiki"
@@ -12,7 +17,7 @@ ai:
 
 search:
   max_results: 20
-  excerpt_length: 160
+  excerpt_length: 500
 
 github_pages:
   base_url: ""

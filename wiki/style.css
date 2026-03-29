@@ -117,8 +117,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 }
 
 .main-content {
-  max-width: var(--content-width);
-  margin: 0 auto;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
   padding: var(--space-xl);
 }
 
@@ -127,8 +128,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .page-layout {
   display: flex;
   gap: var(--space-xl);
-  max-width: calc(var(--content-width) + var(--sidebar-width) + var(--space-xl));
-  margin: 0 auto;
+  max-width: 100%;
   padding: var(--space-xl);
 }
 
@@ -154,10 +154,18 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 
 /* ── Doc cards (index page) ────────────────── */
 
+.section-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+  color: var(--text);
+}
+
 .doc-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  width: 100%;
 }
 
 .doc-card {
@@ -165,6 +173,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   border-radius: 0.5rem;
   padding: var(--space-lg);
   transition: box-shadow 0.15s ease;
+  min-height: 8rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .doc-card:hover {
@@ -185,7 +196,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   gap: var(--space-sm);
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
@@ -193,7 +204,13 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .doc-card-excerpt {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 3.5em;
+  flex-grow: 1;
 }
 
 /* ── Status badges ─────────────────────────── */
@@ -408,19 +425,34 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .tree-sidebar-wrap {
   width: var(--sidebar-width);
   flex-shrink: 0;
+  transition: width 0.2s ease;
 }
 
-.tree-toggle-mobile {
-  display: none;
-  background: none;
-  border: none;
+.tree-sidebar-wrap.collapsed {
+  width: 2.5rem;
+}
+
+.tree-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   color: var(--text);
   cursor: pointer;
-  padding: var(--space-sm) var(--space-md);
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: var(--space-sm);
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: var(--space-sm);
   width: 100%;
-  text-align: left;
+}
+
+.tree-toggle-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.tree-toggle-btn::before {
+  content: "☰";
 }
 
 .tree-sidebar {
@@ -428,6 +460,11 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   border-radius: 0.5rem;
   background: var(--bg);
   overflow: hidden;
+  display: none;
+}
+
+.tree-sidebar.visible {
+  display: block;
 }
 
 .tree-controls {
@@ -554,8 +591,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
     order: -1;
   }
 
-  .tree-toggle-mobile {
-    display: block;
+  .tree-sidebar-wrap.collapsed {
+    width: 100%;
   }
 
   .tree-sidebar {

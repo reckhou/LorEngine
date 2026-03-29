@@ -195,6 +195,7 @@ def load_config(root):
             "favicon": "",
             "logo": "",
         },
+        "pages_dir": "pages",
     }
 
     if not config_path.exists():
@@ -238,20 +239,19 @@ def compute_hierarchy(entries):
     id_map = {entry["id"]: entry for entry in entries}
 
     for entry in entries:
-        doc_path = Path(entry["id"])
-
-        # Compute parent: remove filename, check if a .md exists at that level
-        parent_path = doc_path.parent
-        potential_parent = parent_path / parent_path.name / ".md" if parent_path.name else None
-
-        # Actually, simpler: for docs/a/b/c.md, parent is docs/a/b.md
-        # Get the parent folder path and construct the parent doc path
-        doc_parts = Path(entry["id"]).parts  # e.g., ('docs', 'a', 'b', 'c.md')
+        # Compute parent: for docs/a/b/c.md, parent is docs/a/b.md
+        # (parent folder + folder name as filename)
+        doc_parts = entry["id"].split("/")  # Use forward slashes for consistency
 
         if len(doc_parts) > 2:  # More than just 'docs/file.md'
-            # Parent is at same folder level with folder name as .md
-            parent_id = str(Path(*doc_parts[:-1]).with_name(doc_parts[-2] + ".md")).replace("\\", "/")
-            entry["parent"] = parent_id if parent_id in id_map else None
+            # Parent path: docs/a/b -> docs/a/b.md
+            parent_folder = "/".join(doc_parts[:-1])  # docs/a/b
+            parent_id = f"{parent_folder}/{doc_parts[-2]}.md"  # docs/a/b/b.md
+            # Don't set self-reference (when filename matches folder name)
+            if parent_id != entry["id"]:
+                entry["parent"] = parent_id if parent_id in id_map else None
+            else:
+                entry["parent"] = None
         else:
             entry["parent"] = None
 
@@ -268,10 +268,10 @@ def compute_hierarchy(entries):
     return entries
 
 
-def compute_backlinks(entries):
+def compute_backlinks(entries, pages_dir="pages"):
     """Scan all doc bodies for markdown links and populate backlinks.
 
-    Looks for [text](docs/...) patterns and adds referencing doc IDs to backlinks.
+    Looks for [text](pages/...) patterns and adds referencing doc IDs to backlinks.
     """
     # Create a lookup map
     id_map = {entry["id"]: entry for entry in entries}
@@ -279,6 +279,8 @@ def compute_backlinks(entries):
     # Initialize backlinks list for all entries
     for entry in entries:
         entry["backlinks"] = []
+
+    prefix = pages_dir.rstrip("/") + "/"
 
     # Scan each doc's body for links
     for entry in entries:
@@ -288,8 +290,8 @@ def compute_backlinks(entries):
             # Normalize path (remove leading ./ and trailing /)
             normalized = link_target.strip("./").rstrip("/")
 
-            # Check if this is a doc link (starts with 'docs/')
-            if normalized.startswith("docs/"):
+            # Check if this is a doc link (starts with the pages dir)
+            if normalized.startswith(prefix):
                 # Make sure it has .md extension
                 if not normalized.endswith(".md"):
                     normalized = normalized + ".md"
@@ -305,11 +307,11 @@ def compute_backlinks(entries):
 # Search index generation
 # ---------------------------------------------------------------------------
 
-def build_search_index(root):
-    """Walk docs/ and build the search index entries."""
-    docs_dir = root / "docs"
+def build_search_index(root, pages_dir="pages"):
+    """Walk the pages directory and build the search index entries."""
+    docs_dir = root / pages_dir
     if not docs_dir.exists():
-        print("Warning: docs/ directory not found")
+        print(f"Warning: {pages_dir}/ directory not found")
         return []
 
     entries = []
@@ -355,7 +357,8 @@ def assemble_site(root, config, search_index):
     site_dir.mkdir()
 
     wiki_dir = root / "wiki"
-    docs_dir = root / "docs"
+    pages_dir_name = config["pages_dir"]
+    docs_dir = root / pages_dir_name
 
     # Copy wiki files into _site/
     if wiki_dir.exists():
@@ -363,11 +366,11 @@ def assemble_site(root, config, search_index):
             if f.is_file():
                 shutil.copy2(f, site_dir / f.name)
 
-    # Copy docs/ into _site/docs/
+    # Copy pages dir into _site/{pages_dir}/
     if docs_dir.exists():
-        shutil.copytree(docs_dir, site_dir / "docs")
+        shutil.copytree(docs_dir, site_dir / pages_dir_name)
 
-    # Copy docs/assets/ into _site/assets/ if it exists
+    # Copy {pages_dir}/assets/ into _site/assets/ if it exists
     assets_dir = docs_dir / "assets" if docs_dir.exists() else None
     if assets_dir and assets_dir.exists():
         shutil.copytree(assets_dir, site_dir / "assets")
@@ -423,12 +426,13 @@ def main():
     print(f"  Wiki: {config['wiki']['title']}")
 
     # 2. Build search index
-    search_index = build_search_index(root)
+    pages_dir = config["pages_dir"]
+    search_index = build_search_index(root, pages_dir)
     print(f"  Indexed {len(search_index)} document(s)")
 
     # 3. Compute hierarchy and backlinks
     search_index = compute_hierarchy(search_index)
-    search_index = compute_backlinks(search_index)
+    search_index = compute_backlinks(search_index, pages_dir)
     print(f"  Computed hierarchy and backlinks")
 
     # 4. Write search_index.json to repo root (committed artifact)

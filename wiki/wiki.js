@@ -104,17 +104,16 @@ function renderDocList(data, container) {
     return;
   }
 
-  const statusOrder = { final: 0, review: 1, draft: 2 };
-  const sorted = [...data].sort((a, b) => {
-    const sa = statusOrder[a.status] ?? 3;
-    const sb = statusOrder[b.status] ?? 3;
-    if (sa !== sb) return sa - sb;
-    return (b.last_updated || "").localeCompare(a.last_updated || "");
-  });
+  // Sort by last_updated (most recent first), then show only top 5
+  const sorted = [...data]
+    .sort((a, b) => (b.last_updated || "").localeCompare(a.last_updated || ""))
+    .slice(0, 5);
 
   const html = sorted
     .map((doc) => {
       const excerpt = (doc.excerpt || "").slice(0, WIKI_CONFIG.search.excerptLength);
+      // Convert newlines to <br> for proper line wrapping
+      const excerptHtml = escapeHtml(excerpt).replace(/\n/g, "<br>");
       return `
       <article class="doc-card">
         <h2 class="doc-card-title"><a href="${escapeHtml(docUrl(doc.id))}">${escapeHtml(doc.title)}</a></h2>
@@ -123,7 +122,7 @@ function renderDocList(data, container) {
           ${makeTags(doc.tags)}
           ${doc.last_updated ? `<span>${escapeHtml(doc.last_updated)}</span>` : ""}
         </div>
-        <p class="doc-card-excerpt">${escapeHtml(excerpt)}</p>
+        <p class="doc-card-excerpt">${excerptHtml}</p>
       </article>`;
     })
     .join("");
@@ -260,8 +259,9 @@ function renderTreeNode(docId, tree, docMap, filterText, sortOrder) {
 
   // Filter: hide non-matching, but keep parents visible
   const titleMatches = doc.title.toLowerCase().includes(filterText.toLowerCase());
-  const children = (doc.children || [])
-    .map((childId) => renderTreeNode(childId, tree, docMap, filterText, sortOrder))
+  const childDocs = (doc.children || []).map(childId => docMap[childId]).filter(d => d);
+  const children = childDocs
+    .map(childDoc => renderTreeNode(childDoc.id, tree, docMap, filterText, sortOrder))
     .filter((html) => html.length > 0);
   const hasVisibleChildren = children.length > 0;
 
@@ -270,7 +270,10 @@ function renderTreeNode(docId, tree, docMap, filterText, sortOrder) {
     return "";
   }
 
-  const isExpanded = localStorage.getItem(`tree-expanded-${escapeHtml(doc.id)}`) !== "false";
+  // Default to expanded (true) if no localStorage value, only collapse if explicitly set to "false"
+  const storageKey = `tree-expanded-${doc.id}`;
+  const storedValue = localStorage.getItem(storageKey);
+  const isExpanded = storedValue === null || storedValue !== "false";
   const toggleClass = `tree-toggle${isExpanded ? " expanded" : ""}`;
   const childrenClass = `tree-children${isExpanded ? " visible" : ""}`;
 
@@ -278,7 +281,7 @@ function renderTreeNode(docId, tree, docMap, filterText, sortOrder) {
     <li class="tree-item">
       <div class="tree-item-row">
         ${doc.children && doc.children.length > 0
-          ? `<button class="${toggleClass}" data-doc-id="${escapeHtml(doc.id)}" aria-expanded="${isExpanded}">⋯</button>`
+          ? `<button class="${toggleClass}" data-doc-id="${escapeHtml(doc.id)}" aria-expanded="${isExpanded}">▶</button>`
           : `<span class="tree-toggle-spacer"></span>`}
         <a href="${escapeHtml(docUrl(doc.id))}" class="tree-link">${escapeHtml(doc.title)}</a>
       </div>

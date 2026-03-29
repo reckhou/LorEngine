@@ -1,80 +1,117 @@
 [
   {
-    "id": "docs/decisions/2026-03-29-feature-roadmap.md",
-    "title": "Feature Roadmap Decisions",
+    "id": "pages/examples/another-page.md",
+    "title": "Another Page",
     "tags": [
-      "meta",
-      "decisions",
-      "roadmap"
+      "examples"
     ],
     "status": "final",
-    "last_updated": "2026-03-29",
-    "headings": [
-      "Context",
-      "1. Browser editing",
-      "2. Tree view / page hierarchy",
-      "3. Visual markdown editor",
-      "4. Page references",
-      "5. Favicon / branding",
-      "6. Backward compatibility",
-      "7. API key — two supported options",
-      "Option A: User-supplied key",
-      "Option B: Cloudflare Worker proxy",
-      "Runtime priority"
-    ],
-    "excerpt": "Context\nTechnical decisions agreed in a design session on 2026-03-29, covering six feature areas\nfor Lorengine v1.1+. These decisions are binding unless explicitly revisited.\n1. Browser editing\n- Tool: Decap CMS — adds page, GitHub OAuth login\n- Editor: Toast UI Editor embedded — WYSIWYG ↔ raw markd",
-    "body": "Context\nTechnical decisions agreed in a design session on 2026-03-29, covering six feature areas\nfor Lorengine v1.1+. These decisions are binding unless explicitly revisited.\n1. Browser editing\n- Tool: Decap CMS — adds page, GitHub OAuth login\n- Editor: Toast UI Editor embedded — WYSIWYG ↔ raw markdown toggle with preview\n- Flow: User edits in browser → Decap commits to repo via GitHub API → build pipeline rebuilds\n- Requirement: Editors must have a GitHub account\n2. Tree view / page hierarchy\n- Structure: Folder-based — means is parent of \n- Depth: Arbitrary; 3 levels recommended as best practice\n- Nodes: Every page is a node — no separate category type. Each page has at most 1 parent.\n- Sidebar: Collapsible, visible by default, state persisted in localStorage\n- Sort: Alphabetical or date asc/desc — user-selectable\n- Filter: Matches page titles; unmatched ancestors remain visible to preserve structure\n3. Visual markdown editor\n- Library: Toast UI Editor (MIT, CDN-available)\n- Modes: WYSIWYG and raw markdown, switchable\n- Preview: Real rendered preview before submitting\n- Images: In-repo () or external URL — user responsible for accessibility\n- Principle: Use existing library, do not build from scratch\n4. Page references\n- Autocomplete: Matches frontmatter titles (case-insensitive)\n- Syntax: Standard markdown — WYSIWYG renders as link\n- Backlinks: Section at bottom of every page listing pages that link to it (generated at build time)\n- Wiki-links: only if the editor natively supports it; otherwise standard links\n- GitHub issues: Reference as standard markdown links only — no deep integration\n5. Favicon / branding\nBoth optional, set per-fork in :\n6. Backward compatibility\n- Template scope: Public template, focused on game development wikis\n- Future: May expand to GitHub issues/tasks integration\n- Versioning: release-please Action → auto CHANGELOG.md + semver tags + GitHub Releases\n- Semver: major = breaking, minor = new feature, patch = bugfix\n- Config: Build script warns (non-fatal) on unknown config.yml keys\n7. API key — two supported options\nOption A: User-supplied key\n- Blocking modal when no saved key exists — cannot use AI sidebar without entering a key\n- \"Remember on this device\" checkbox — defaults to (cleared on tab close)\n- If \"Remember\" checked → stored in + \"Delete saved key\" button visible in sidebar\n- User can delete the saved key at any time via the button in the sidebar\nOption B: Cloudflare Worker proxy\n- Key stored in Cloudflare secret store, never exposed to browser\n- Recommended for public wikis\n- Free tier: 100k requests/day\n- Proxy template + setup docs included in repo\nRuntime priority\n1. saved key → use silently (show delete option in sidebar)\n2. Neither → show blocking modal",
-    "parent": null,
-    "children": [],
-    "backlinks": []
-  },
-  {
-    "id": "docs/example-doc.md",
-    "title": "Example Document",
-    "tags": [
-      "example",
-      "getting-started"
-    ],
-    "status": "draft",
     "last_updated": "2026-03-29",
     "headings": [
       "Overview",
-      "Frontmatter Fields",
-      "Writing Guidelines",
-      "Markdown Features",
-      "Tips"
+      "Siblings"
     ],
-    "excerpt": "Overview\nThis is an example document demonstrating the required frontmatter format for\nLorengine. Every markdown file in needs a field in its YAML\nfrontmatter — all other fields are optional but recommended.\nDelete this file after setting up your fork and replace it with your own content.\nFrontmatte",
-    "body": "Overview\nThis is an example document demonstrating the required frontmatter format for\nLorengine. Every markdown file in needs a field in its YAML\nfrontmatter — all other fields are optional but recommended.\nDelete this file after setting up your fork and replace it with your own content.\nFrontmatter Fields\n- title (required): The display name of the document\n- tags: A list of tags for categorisation and search filtering\n- status: One of , , or \n- last-updated: The date this document was last modified (YYYY-MM-DD)\nWriting Guidelines\nUse and headings to structure your documents. These headings are\nextracted by the build script for the table of contents and search index.\nMarkdown Features\nStandard markdown is supported:\n- Bold and italic text\n- and fenced code blocks\n- Links, images, and lists\n- Tables and blockquotes\nTips\n- Keep documents focused on a single topic\n- Use descriptive titles and relevant tags\n- Update the field when making changes\n- Set to when the document is ready for reference",
-    "parent": null,
+    "excerpt": "Overview\nA second flat leaf page under Examples. Both this and Simple Page are children of\n because they share the same folder.\nSiblings\nSibling pages appear at the same indentation level in the tree. Their order in the sidebar\nfollows the sort setting (default: A–Z by title).",
+    "body": "Overview\nA second flat leaf page under Examples. Both this and Simple Page are children of\n because they share the same folder.\nSiblings\nSibling pages appear at the same indentation level in the tree. Their order in the sidebar\nfollows the sort setting (default: A–Z by title).",
+    "parent": "pages/examples/examples.md",
     "children": [],
     "backlinks": []
   },
   {
-    "id": "docs/plans/2026-03-29-lorengine-v1-1.md",
-    "title": "Lorengine v1.1 Implementation Plan",
+    "id": "pages/examples/examples.md",
+    "title": "Examples",
     "tags": [
-      "v1.1",
-      "plan",
-      "implementation"
+      "examples",
+      "navigation"
     ],
     "status": "final",
     "last_updated": "2026-03-29",
     "headings": [
-      "Progress",
-      "Files",
-      "Task 1: Build script v1.1 — hierarchy, backlinks, branding, config validation",
-      "Task 2: Tree sidebar — folder-based tree with filter/sort and persistence",
-      "Task 3: API key modal system — blocking modal, remember/delete",
-      "Task 4: Backlinks + page references — display backlinks, title autocomplete",
-      "Task 5: Decap CMS + Toast UI Editor — admin interface, WYSIWYG, image upload",
-      "Task 6: Release tooling — release-please, GitHub Actions, semver",
-      "Implementation Notes"
+      "Overview",
+      "Key rule",
+      "Subsections"
     ],
-    "excerpt": "Lorengine v1.1 Implementation Plan\nGoal: Add collaborative editing (Decap CMS), hierarchical page organization (tree view), user-friendly API key handling, page references with backlinks, and release tooling. All decisions from 2026-03-29 design session.\nArchitecture: Build script enhanced to comput",
-    "body": "Lorengine v1.1 Implementation Plan\nGoal: Add collaborative editing (Decap CMS), hierarchical page organization (tree view), user-friendly API key handling, page references with backlinks, and release tooling. All decisions from 2026-03-29 design session.\nArchitecture: Build script enhanced to compute hierarchy metadata and backlinks from folder structure. Wiki frontend renders collapsible tree sidebar from hierarchy. API key modal persists to localStorage with delete option. Decap CMS adds interface for WYSIWYG editing with image upload, committing back to repo. release-please automates versioning from conventional commits.\nTech Stack: Python 3.11+ stdlib (build script), vanilla JS ES2020+ (sidebar/modal), Toast UI Editor (WYSIWYG via CDN), Decap CMS (headless CMS via CDN), release-please GitHub Action.\n---\nProgress\n- [x] Task 1: Build script v1.1 — hierarchy, backlinks, branding, config validation\n- [x] Task 2: Tree sidebar — folder-based tree with filter/sort and persistence\n- [x] Task 3: API key modal system — blocking modal, remember/delete\n- [x] Task 4: Backlinks + page references — display backlinks, title autocomplete\n- [ ] Task 5: Decap CMS + Toast UI Editor — admin interface, WYSIWYG, image upload\n- [ ] Task 6: Release tooling — release-please, GitHub Actions, semver\n---\nFiles\nModified:\n- — add hierarchy, backlinks, branding, config validation functions\n- — add section defaults\n- — add tree sidebar, API modal, backlinks display\n- — add tree, modal, backlinks styles\n- , , — add tree sidebar, modal\nCreate:\n- — release-please automation\n- — changelog template\n- — Decap CMS interface\n- — Decap CMS configuration\n- — optional API key proxy template\n---\nTask 1: Build script v1.1 — hierarchy, backlinks, branding, config validation\nFiles: , \nAdd three core functions to buildwiki.py:\n1. computehierarchy(entries) — Build parent/child tree from folder paths. For , parent is . Each entry gains field (null for top-level) and list.\n2. computebacklinks(entries) — Scan all doc bodies for markdown links and populate list on each entry showing which docs reference it.\n3. validateconfig(parsed, defaults) — Warn on unknown top-level config keys (non-fatal) to catch typos in config.yml.\nUpdate to add section with defaults for and .\nUpdate to:\n- Copy into (for in-repo images)\n- Inject favicon/logo paths into template replacements\nUpdate call sequence:\nVerify: Run build and check:\n- has , , fields on each entry\n- Existing docs work (example-doc.md has empty hierarchy/backlinks)\n- Config warning appears for unknown keys\n- Branding values injected into HTML\n---\nTask 2: Tree sidebar — folder-based tree with filter/sort and persistence\nFiles: , , , , \nDepends on: Task 1\nRender collapsible tree from hierarchy data with filter and sort controls.\nJS functions:\n- — Create tree nodes from entries with parent/child links. Store expanded state from localStorage.\n- — Recursively render tree item with expand/collapse toggle. When filtering, hide non-matching docs but keep unmatched parents visible (preserve structure).\n- — Set up tree UI with filter input and sort dropdown. Save expanded state on toggle.\nCSS: Add styles for , (with rotation animation), , , , .\nHTML: Add tree sidebar to all three pages:\nVerify:\n- Tree shows all docs with expand/collapse arrows\n- Filter hides non-matching but keeps parents visible\n- Sort by alpha/date works\n- Expanded state persists on page navigation\n- Mobile: sidebar hidden by default with toggle button\n---\nTask 3: API key modal system — blocking modal, remember/delete\nFiles: , , \nImplement blocking modal for API key entry with remember/delete options.\nJS functions:\n- — Show modal with password input, remember checkbox, submit button. Modal is fixed position, centered, blocks page interaction. Call callback(key, remember) on submit.\n- Update — Check localStorage for saved key. If missing, show modal. If present, use it silently.\n- — If key was remembered, add delete button that removes it from localStorage.\nCSS: Modal overlay styles, input styling, delete button styling with warning icon.\nVerify:\n- Fresh page (no saved key) → blocking modal appears immediately\n- Enter key, uncheck remember → sidebar works, refresh shows modal again\n- Enter key, check remember → sidebar works, delete button visible, refresh keeps key\n- Click delete → key removed, refresh shows modal\n- Key never appears in network requests (only sent to API or Cloudflare proxy)\n---\nTask 4: Backlinks + page references — display backlinks, title autocomplete\nFiles: , , \nDepends on: Task 1\nDisplay pages that reference the current doc. Add title-based autocomplete for creating links.\nJS functions:\n- — Render section listing docs that link to this one. Uses backlinks array from search index (populated by Task 1).\n- — Create Map of title (lowercased) → doc id.\n- — Return matching titles for partial input (case-insensitive).\nCSS: Styles for section with border separator, link styling.\nHTML: Add to page.html:\nIn initialization, after rendering doc body, render backlinks if they exist.\nVerify:\n- Create docs: a.md links to b.md via standard markdown links\n- View b.md → \"Referenced by\" section shows a.md\n- No section if doc has no backlinks\n- Links are clickable\n---\nTask 5: Decap CMS + Toast UI Editor — admin interface, WYSIWYG, image upload\nFiles: (new), (new), (minor update)\nIndependent — can be done in parallel with Tasks 1-4.\nCreate admin interface at for in-browser editing with WYSIWYG editor and image upload.\ndecap.yml configuration:\n- Backend: GitHub (requires OAuth setup in downstream forks)\n- Collection: pages in docs/ folder\n- Fields: title (string), tags (list), status (select), last-updated (datetime), body (markdown)\n- Media: docs/assets/\nwiki/admin.html: Minimal HTML that loads Decap CMS and Toast UI Editor from CDN. Decap provides complete UI. Users log in via GitHub, edit/create pages via form, images upload to docs/assets/, changes commit back to repo.\nDownstream setup required:\n- Create GitHub OAuth app\n- Add credentials to Decap config\n- Navigate to after deploying\nVerify:\n- Navigate to → Decap login page (GitHub OAuth)\n- Create page via form → commit in git history\n- Images upload to docs/assets/\n- Commit triggers existing build pipeline\n- Preview toggle works in editor (Decap built-in)\n---\nTask 6: Release tooling — release-please, GitHub Actions, semver\nFiles: (new), (new)\nIndependent — can be done anytime.\nAutomate versioning and changelog from conventional commits using release-please.\n.github/workflows/release.yml:\n- Trigger: push to main\n- Action: release-please (googleapis/release-please-action)\n- Reads commits, bumps version (feat→minor, fix→patch, feat!→major)\n- Updates CHANGELOG.md\n- Creates GitHub Release\n- Tags commit with semver (v1.1.0, etc.)\nCHANGELOG.md template:\n- Structure per Keep a Changelog\n- release-please populates \"Unreleased\" section, then versions it on release\nUpdate README.md:\n- Document conventional commit format\n- Note that forks can pin to specific versions via git tags\nVerify:\n- Merge → release-please PR opens\n- Merge release-please PR → v1.1.0 tag created, GitHub Release published\n- Downstream forks can \n---\nImplementation Notes\nParallelism:\n- Tasks 1, 3, 6 are independent\n- Tasks 2, 4 depend on Task 1\n- Task 5 is independent but benefits from Task 1\nTesting approach:\n- Tasks 1-4: local build + manual browser testing\n- Task 5: requires GitHub OAuth setup in fork\n- Task 6: runs automatically on main branch pushes\nBackward compatibility:\n- All changes are additive (new fields, no breaking changes)\n- Existing wikis continue to work\n- New features are optional (Decap, release tooling)",
+    "excerpt": "Overview\nThis section contains example pages that demonstrate how the tree sidebar organises docs.\nPages placed directly inside a folder become children of the file named after that folder.\nFor example, and are siblings here because both live in\n and this file is named — matching the folder name.\nKe",
+    "body": "Overview\nThis section contains example pages that demonstrate how the tree sidebar organises docs.\nPages placed directly inside a folder become children of the file named after that folder.\nFor example, and are siblings here because both live in\n and this file is named — matching the folder name.\nKey rule\nA file named the same as its containing folder becomes the section root for that folder.\nEvery other file in that folder is a direct child of the root.\nSubsections\nSubfolder roots (e.g. ) appear as independent top-level nodes in the\ntree — they are not children of this page. The tree only tracks one level of folder nesting\nper section root.",
     "parent": null,
+    "children": [
+      "pages/examples/another-page.md",
+      "pages/examples/simple-page.md"
+    ],
+    "backlinks": []
+  },
+  {
+    "id": "pages/examples/simple-page.md",
+    "title": "Simple Page",
+    "tags": [
+      "examples"
+    ],
+    "status": "final",
+    "last_updated": "2026-03-29",
+    "headings": [
+      "Overview",
+      "When to use flat pages"
+    ],
+    "excerpt": "Overview\nThis is a flat leaf page — it has no children and lives directly under the Examples section.\nIn the tree sidebar it appears as a plain link under Examples, with no expand toggle.\nWhen to use flat pages\nUse flat pages for standalone topics that don't need sub-pages — reference entries,\none-o",
+    "body": "Overview\nThis is a flat leaf page — it has no children and lives directly under the Examples section.\nIn the tree sidebar it appears as a plain link under Examples, with no expand toggle.\nWhen to use flat pages\nUse flat pages for standalone topics that don't need sub-pages — reference entries,\none-off guides, or short factual docs that won't grow into a section.",
+    "parent": "pages/examples/examples.md",
     "children": [],
+    "backlinks": []
+  },
+  {
+    "id": "pages/examples/subsection/child-one.md",
+    "title": "Child One",
+    "tags": [
+      "examples"
+    ],
+    "status": "final",
+    "last_updated": "2026-03-29",
+    "headings": [
+      "Overview"
+    ],
+    "excerpt": "Overview\nFirst child of the Subsection root. Lives at .\nThe tree sidebar shows this nested under Subsection with one level of indentation.",
+    "body": "Overview\nFirst child of the Subsection root. Lives at .\nThe tree sidebar shows this nested under Subsection with one level of indentation.",
+    "parent": "pages/examples/subsection/subsection.md",
+    "children": [],
+    "backlinks": []
+  },
+  {
+    "id": "pages/examples/subsection/child-two.md",
+    "title": "Child Two",
+    "tags": [
+      "examples"
+    ],
+    "status": "final",
+    "last_updated": "2026-03-29",
+    "headings": [
+      "Overview"
+    ],
+    "excerpt": "Overview\nSecond child of the Subsection root. Lives at .\nTogether with Child One, this demonstrates two siblings sharing a section root.",
+    "body": "Overview\nSecond child of the Subsection root. Lives at .\nTogether with Child One, this demonstrates two siblings sharing a section root.",
+    "parent": "pages/examples/subsection/subsection.md",
+    "children": [],
+    "backlinks": []
+  },
+  {
+    "id": "pages/examples/subsection/subsection.md",
+    "title": "Subsection",
+    "tags": [
+      "examples",
+      "navigation"
+    ],
+    "status": "final",
+    "last_updated": "2026-03-29",
+    "headings": [
+      "Overview",
+      "When to use nested sections"
+    ],
+    "excerpt": "Overview\nThis page is the root of the folder. It appears as an independent top-level\nnode in the tree sidebar — not as a child of Examples — because section roots are always\npromoted to the top level.\nIts children (, ) appear nested beneath it when expanded.\nWhen to use nested sections\nUse a subfold",
+    "body": "Overview\nThis page is the root of the folder. It appears as an independent top-level\nnode in the tree sidebar — not as a child of Examples — because section roots are always\npromoted to the top level.\nIts children (, ) appear nested beneath it when expanded.\nWhen to use nested sections\nUse a subfolder with a matching root file when a topic has enough sub-pages to warrant\ngrouping — typically three or more related pages that share a parent concept.",
+    "parent": null,
+    "children": [
+      "pages/examples/subsection/child-one.md",
+      "pages/examples/subsection/child-two.md"
+    ],
     "backlinks": []
   }
 ]

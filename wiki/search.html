@@ -21,7 +21,7 @@
 
   <div class="page-layout">
     <aside class="tree-sidebar-wrap">
-      <button class="tree-toggle-mobile" aria-label="Toggle page tree">☰ Pages</button>
+      <button class="tree-toggle-btn" aria-label="Toggle page tree"></button>
       <div id="tree-sidebar" class="tree-sidebar"></div>
     </aside>
     <main class="main-content">
@@ -66,12 +66,14 @@
 
       initThemePanel();
 
-      // Mobile tree toggle
-      const toggleBtn = document.querySelector(".tree-toggle-mobile");
+      // Tree sidebar toggle
+      const toggleBtn = document.querySelector(".tree-toggle-btn");
       const treeSidebar = document.querySelector(".tree-sidebar");
+      const treeWrap = document.querySelector(".tree-sidebar-wrap");
       if (toggleBtn) {
         toggleBtn.addEventListener("click", () => {
           treeSidebar.classList.toggle("visible");
+          treeWrap.classList.toggle("collapsed");
         });
       }
     })();
