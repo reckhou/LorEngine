@@ -33,6 +33,7 @@
       <article id="page-body" class="markdown-body">
         <p class="loading">Loading document...</p>
       </article>
+      <div id="page-backlinks"></div>
     </main>
 
     <aside class="page-sidebar">
@@ -112,6 +113,12 @@
         // Render markdown
         const bodyEl = document.getElementById("page-body");
         safeSetInnerHTML(bodyEl, renderMarkdown(body));
+
+        // Render backlinks if they exist
+        if (meta && meta.backlinks && meta.backlinks.length > 0) {
+          const backlinksEl = document.getElementById("page-backlinks");
+          safeSetInnerHTML(backlinksEl, renderBacklinks(meta.backlinks, searchIndex));
+        }
 
         // Init tree sidebar and AI sidebar
         initTreeSidebar(searchIndex, document.getElementById("tree-sidebar"));

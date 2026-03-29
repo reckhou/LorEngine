@@ -381,6 +381,68 @@ function initTreeSidebar(data, container) {
 }
 
 // ---------------------------------------------------------------------------
+// Backlinks and page references
+// ---------------------------------------------------------------------------
+
+function renderBacklinks(backlinks, searchIndex) {
+  if (!backlinks || backlinks.length === 0) {
+    return "";
+  }
+
+  const docMap = Object.fromEntries(searchIndex.map((d) => [d.id, d]));
+  const links = backlinks
+    .map((id) => {
+      const doc = docMap[id];
+      if (!doc) return "";
+      return `<li><a href="${escapeHtml(docUrl(id))}">${escapeHtml(doc.title)}</a></li>`;
+    })
+    .filter((html) => html.length > 0)
+    .join("");
+
+  if (!links) return "";
+
+  return `
+    <div class="backlinks-section">
+      <h3>Referenced by</h3>
+      <ul class="backlinks-list">
+        ${links}
+      </ul>
+    </div>`;
+}
+
+function buildTitleAutocomplete(searchIndex) {
+  // Create a map of lowercase title → doc id
+  const titleMap = new Map();
+  for (const doc of searchIndex) {
+    const key = doc.title.toLowerCase();
+    titleMap.set(key, doc.id);
+  }
+  return titleMap;
+}
+
+function autocompleteTitle(input, titleMap) {
+  // Return matching doc IDs for partial input (case-insensitive)
+  if (!input.trim()) return [];
+
+  const search = input.toLowerCase();
+  const matches = [];
+
+  for (const [title, id] of titleMap) {
+    if (title.includes(search)) {
+      matches.push({ title, id });
+    }
+  }
+
+  // Sort by relevance: starts with search first, then contains
+  return matches.sort((a, b) => {
+    const aStarts = a.title.startsWith(search);
+    const bStarts = b.title.startsWith(search);
+    if (aStarts !== bStarts) return bStarts ? 1 : -1;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // API Key Modal
 // ---------------------------------------------------------------------------
 
