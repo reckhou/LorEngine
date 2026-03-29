@@ -236,6 +236,151 @@ function renderToc(headings) {
 }
 
 // ---------------------------------------------------------------------------
+// Tree Sidebar
+// ---------------------------------------------------------------------------
+
+function buildDocTree(data) {
+  // Create a map for quick lookup
+  const docMap = Object.fromEntries(data.map((d) => [d.id, { ...d }]));
+
+  // Build tree structure
+  const roots = [];
+  for (const doc of Object.values(docMap)) {
+    if (doc.parent === null || !docMap[doc.parent]) {
+      roots.push(doc.id);
+    }
+  }
+
+  return { docMap, roots };
+}
+
+function renderTreeNode(docId, tree, docMap, filterText, sortOrder) {
+  const doc = docMap[docId];
+  if (!doc) return "";
+
+  // Filter: hide non-matching, but keep parents visible
+  const titleMatches = doc.title.toLowerCase().includes(filterText.toLowerCase());
+  const children = (doc.children || [])
+    .map((childId) => renderTreeNode(childId, tree, docMap, filterText, sortOrder))
+    .filter((html) => html.length > 0);
+  const hasVisibleChildren = children.length > 0;
+
+  // Show this node if: matches filter OR has visible children
+  if (!titleMatches && !hasVisibleChildren && filterText.trim()) {
+    return "";
+  }
+
+  const isExpanded = localStorage.getItem(`tree-expanded-${escapeHtml(doc.id)}`) !== "false";
+  const toggleClass = `tree-toggle${isExpanded ? " expanded" : ""}`;
+  const childrenClass = `tree-children${isExpanded ? " visible" : ""}`;
+
+  return `
+    <li class="tree-item">
+      <div class="tree-item-row">
+        ${doc.children && doc.children.length > 0
+          ? `<button class="${toggleClass}" data-doc-id="${escapeHtml(doc.id)}" aria-expanded="${isExpanded}">⋯</button>`
+          : `<span class="tree-toggle-spacer"></span>`}
+        <a href="${escapeHtml(docUrl(doc.id))}" class="tree-link">${escapeHtml(doc.title)}</a>
+      </div>
+      ${children.length > 0
+        ? `<ul class="${childrenClass}">${children.join("")}</ul>`
+        : ""}
+    </li>`;
+}
+
+function initTreeSidebar(data, container) {
+  if (!container) return;
+
+  const { docMap, roots } = buildDocTree(data);
+
+  // Create tree controls
+  const controlsHtml = `
+    <div class="tree-controls">
+      <input type="text" class="tree-filter" placeholder="Filter pages...">
+      <select class="tree-sort">
+        <option value="alpha-asc">A-Z</option>
+        <option value="alpha-desc">Z-A</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="date-desc">Newest first</option>
+      </select>
+    </div>
+  `;
+
+  const treeHtml = `
+    <ul class="tree-list">
+      ${roots
+        .map((id) => renderTreeNode(id, { docMap, roots }, docMap, "", "alpha-asc"))
+        .join("")}
+    </ul>
+  `;
+
+  safeSetInnerHTML(container, controlsHtml + treeHtml);
+
+  // Handle toggle clicks
+  const toggles = container.querySelectorAll(".tree-toggle");
+  toggles.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const docId = btn.dataset.docId;
+      const childrenEl = btn.parentElement.nextElementSibling;
+
+      if (childrenEl && childrenEl.classList.contains("tree-children")) {
+        const isExpanded = childrenEl.classList.contains("visible");
+        childrenEl.classList.toggle("visible");
+        btn.classList.toggle("expanded");
+        localStorage.setItem(`tree-expanded-${docId}`, isExpanded ? "false" : "true");
+      }
+    });
+  });
+
+  // Handle filter
+  const filterInput = container.querySelector(".tree-filter");
+  const sortSelect = container.querySelector(".tree-sort");
+
+  function updateTree() {
+    const filterText = filterInput?.value || "";
+    const sortOrder = sortSelect?.value || "alpha-asc";
+
+    const treeHtml = `
+      <ul class="tree-list">
+        ${roots
+          .map((id) => renderTreeNode(id, { docMap, roots }, docMap, filterText, sortOrder))
+          .join("")}
+      </ul>
+    `;
+
+    const treeListEl = container.querySelector(".tree-list");
+    if (treeListEl) {
+      safeSetInnerHTML(treeListEl, treeHtml.replace(/<[^>]*>/g, (match) => {
+        // This is a workaround to just update the list without re-creating controls
+        if (match.includes("ul")) return match;
+        return match;
+      }));
+
+      // Re-attach toggle listeners
+      const newToggles = container.querySelectorAll(".tree-toggle");
+      newToggles.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const docId = btn.dataset.docId;
+          const childrenEl = btn.parentElement.nextElementSibling;
+
+          if (childrenEl && childrenEl.classList.contains("tree-children")) {
+            const isExpanded = childrenEl.classList.contains("visible");
+            childrenEl.classList.toggle("visible");
+            btn.classList.toggle("expanded");
+            localStorage.setItem(`tree-expanded-${docId}`, isExpanded ? "false" : "true");
+          }
+        });
+      });
+    }
+  }
+
+  filterInput?.addEventListener("input", updateTree);
+  sortSelect?.addEventListener("change", updateTree);
+}
+
+// ---------------------------------------------------------------------------
 // AI Sidebar
 // ---------------------------------------------------------------------------
 

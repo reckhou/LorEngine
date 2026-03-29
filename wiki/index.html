@@ -20,11 +20,17 @@
     </nav>
   </header>
 
-  <main class="main-content">
-    <div id="doc-list" class="doc-list">
-      <p class="loading">Loading documents...</p>
-    </div>
-  </main>
+  <div class="page-layout">
+    <aside class="tree-sidebar-wrap">
+      <button class="tree-toggle-mobile" aria-label="Toggle page tree">☰ Pages</button>
+      <div id="tree-sidebar" class="tree-sidebar"></div>
+    </aside>
+    <main class="main-content">
+      <div id="doc-list" class="doc-list">
+        <p class="loading">Loading documents...</p>
+      </div>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script src="wiki.js"></script>
@@ -33,10 +39,20 @@
       try {
         const data = await loadSearchIndex();
         renderDocList(data, document.getElementById("doc-list"));
+        initTreeSidebar(data, document.getElementById("tree-sidebar"));
       } catch (err) {
         document.getElementById("doc-list").textContent = "Failed to load documents: " + err.message;
       }
       initThemePanel();
+
+      // Mobile tree toggle
+      const toggleBtn = document.querySelector(".tree-toggle-mobile");
+      const treeSidebar = document.querySelector(".tree-sidebar");
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          treeSidebar.classList.toggle("visible");
+        });
+      }
     })();
   </script>
 </body>

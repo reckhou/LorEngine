@@ -23,6 +23,10 @@
   </header>
 
   <div class="page-layout">
+    <aside class="tree-sidebar-wrap">
+      <button class="tree-toggle-mobile" aria-label="Toggle page tree">☰ Pages</button>
+      <div id="tree-sidebar" class="tree-sidebar"></div>
+    </aside>
     <main class="page-content">
       <div id="page-toc"></div>
       <div id="page-meta"></div>
@@ -109,7 +113,8 @@
         const bodyEl = document.getElementById("page-body");
         safeSetInnerHTML(bodyEl, renderMarkdown(body));
 
-        // Init AI sidebar
+        // Init tree sidebar and AI sidebar
+        initTreeSidebar(searchIndex, document.getElementById("tree-sidebar"));
         initAISidebar(body, searchIndex);
 
       } catch (err) {
@@ -117,6 +122,15 @@
       }
 
       initThemePanel();
+
+      // Mobile tree toggle
+      const toggleBtn = document.querySelector(".tree-toggle-mobile");
+      const treeSidebar = document.querySelector(".tree-sidebar");
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          treeSidebar.classList.toggle("visible");
+        });
+      }
     })();
   </script>
 </body>
