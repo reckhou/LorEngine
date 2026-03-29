@@ -216,6 +216,13 @@ function renderSearch(query, lunrIndex, data, container, page = 1) {
 // Markdown rendering (page viewer)
 // ---------------------------------------------------------------------------
 
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
+
 function renderMarkdown(md) {
   marked.setOptions({
     gfm: true,
@@ -227,7 +234,16 @@ function renderMarkdown(md) {
       return hljs.highlightAuto(code).value;
     },
   });
-  return sanitize(marked.parse(md));
+  // Post-process to add id attributes to headings for hash-link navigation.
+  // marked v12 does not add them by default; this avoids touching the renderer API.
+  const html = marked.parse(md).replace(
+    /<h([1-6])>(.*?)<\/h\1>/g,
+    (_, level, content) => {
+      const id = slugify(content.replace(/<[^>]*>/g, ""));
+      return `<h${level} id="${id}">${content}</h${level}>`;
+    }
+  );
+  return sanitize(html);
 }
 
 function buildToc(md) {
@@ -238,11 +254,7 @@ function buildToc(md) {
     if (m) {
       const level = m[1].length;
       const text = m[2].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-");
-      headings.push({ level, text, id });
+      headings.push({ level, text, id: slugify(text) });
     }
   }
   return headings;
@@ -267,6 +279,19 @@ function renderToc(headings) {
 // Tree Sidebar
 // ---------------------------------------------------------------------------
 
+function sortDocIds(ids, docMap, sortOrder) {
+  return [...ids].sort((a, b) => {
+    const da = docMap[a];
+    const db = docMap[b];
+    switch (sortOrder) {
+      case "alpha-desc": return db.title.localeCompare(da.title);
+      case "date-asc":   return (da.last_updated || "").localeCompare(db.last_updated || "");
+      case "date-desc":  return (db.last_updated || "").localeCompare(da.last_updated || "");
+      default:           return da.title.localeCompare(db.title); // alpha-asc
+    }
+  });
+}
+
 function buildDocTree(data) {
   // Create a map for quick lookup
   const docMap = Object.fromEntries(data.map((d) => [d.id, { ...d }]));
@@ -288,9 +313,9 @@ function renderTreeNode(docId, tree, docMap, filterText, sortOrder) {
 
   // Filter: hide non-matching, but keep parents visible
   const titleMatches = doc.title.toLowerCase().includes(filterText.toLowerCase());
-  const childDocs = (doc.children || []).map(childId => docMap[childId]).filter(d => d);
-  const children = childDocs
-    .map(childDoc => renderTreeNode(childDoc.id, tree, docMap, filterText, sortOrder))
+  const sortedChildIds = sortDocIds((doc.children || []).filter(id => docMap[id]), docMap, sortOrder);
+  const children = sortedChildIds
+    .map(childId => renderTreeNode(childId, tree, docMap, filterText, sortOrder))
     .filter((html) => html.length > 0);
   const hasVisibleChildren = children.length > 0;
 
@@ -377,21 +402,14 @@ function initTreeSidebar(data, container) {
     const filterText = filterInput?.value || "";
     const sortOrder = sortSelect?.value || "alpha-asc";
 
-    const treeHtml = `
-      <ul class="tree-list">
-        ${roots
-          .map((id) => renderTreeNode(id, { docMap, roots }, docMap, filterText, sortOrder))
-          .join("")}
-      </ul>
-    `;
+    const sortedRoots = sortDocIds(roots, docMap, sortOrder);
+    const treeItems = sortedRoots
+      .map((id) => renderTreeNode(id, { docMap, roots }, docMap, filterText, sortOrder))
+      .join("");
 
     const treeListEl = container.querySelector(".tree-list");
     if (treeListEl) {
-      safeSetInnerHTML(treeListEl, treeHtml.replace(/<[^>]*>/g, (match) => {
-        // This is a workaround to just update the list without re-creating controls
-        if (match.includes("ul")) return match;
-        return match;
-      }));
+      safeSetInnerHTML(treeListEl, treeItems);
 
       // Re-attach toggle listeners
       const newToggles = container.querySelectorAll(".tree-toggle");

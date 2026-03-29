@@ -124,6 +124,12 @@
         initTreeSidebar(searchIndex, document.getElementById("tree-sidebar"));
         initAISidebar(body, searchIndex);
 
+        // Scroll to heading anchor now that content is rendered
+        if (window.location.hash) {
+          const target = document.getElementById(window.location.hash.slice(1));
+          if (target) target.scrollIntoView();
+        }
+
       } catch (err) {
         document.getElementById("page-body").textContent = "Error loading document: " + err.message;
       }
