@@ -134,16 +134,23 @@ function renderDocList(data, container) {
 // Search page
 // ---------------------------------------------------------------------------
 
-function renderSearch(query, lunrIndex, data, container) {
+function renderSearch(query, lunrIndex, data, container, page = 1) {
   if (!query.trim()) {
     container.textContent = "Type to search across all documents.";
     container.className = "empty-state";
     return;
   }
 
+  // Append wildcard to each term for prefix matching (e.g. "doc" matches "document")
+  const wildcardQuery = query
+    .trim()
+    .split(/\s+/)
+    .map((term) => (/[*~^]/.test(term) ? term : term + "*"))
+    .join(" ");
+
   let results;
   try {
-    results = lunrIndex.search(query);
+    results = lunrIndex.search(wildcardQuery);
   } catch {
     try {
       results = lunrIndex.search(query.replace(/[:\*\~\^]/g, ""));
@@ -161,9 +168,12 @@ function renderSearch(query, lunrIndex, data, container) {
   }
 
   const dataMap = Object.fromEntries(data.map((d) => [d.id, d]));
-  const limited = results.slice(0, WIKI_CONFIG.search.maxResults);
+  const perPage = WIKI_CONFIG.search.maxResults;
+  const totalPages = Math.ceil(results.length / perPage);
+  const currentPage = Math.min(Math.max(page, 1), totalPages);
+  const pageResults = results.slice((currentPage - 1) * perPage, currentPage * perPage);
 
-  const html = limited
+  const cardsHtml = pageResults
     .map((r) => {
       const doc = dataMap[r.ref];
       if (!doc) return "";
@@ -180,7 +190,26 @@ function renderSearch(query, lunrIndex, data, container) {
     })
     .join("");
 
-  safeSetInnerHTML(container, html);
+  const paginationHtml = totalPages > 1 ? `
+    <div class="search-pagination">
+      ${currentPage > 1
+        ? `<button class="pagination-btn" data-page="${currentPage - 1}">&#8592; Prev</button>`
+        : `<button class="pagination-btn" disabled>&#8592; Prev</button>`}
+      <span class="pagination-info">${currentPage} / ${totalPages}</span>
+      ${currentPage < totalPages
+        ? `<button class="pagination-btn" data-page="${currentPage + 1}">Next &#8594;</button>`
+        : `<button class="pagination-btn" disabled>Next &#8594;</button>`}
+    </div>` : "";
+
+  safeSetInnerHTML(container, cardsHtml + paginationHtml);
+
+  // Attach pagination button listeners
+  container.querySelectorAll(".pagination-btn[data-page]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      renderSearch(query, lunrIndex, data, container, parseInt(btn.dataset.page, 10));
+      container.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -270,10 +299,10 @@ function renderTreeNode(docId, tree, docMap, filterText, sortOrder) {
     return "";
   }
 
-  // Default to expanded (true) if no localStorage value, only collapse if explicitly set to "false"
+  // Default to collapsed; only expand if explicitly stored as "true"
   const storageKey = `tree-expanded-${doc.id}`;
   const storedValue = localStorage.getItem(storageKey);
-  const isExpanded = storedValue === null || storedValue !== "false";
+  const isExpanded = storedValue === "true";
   const toggleClass = `tree-toggle${isExpanded ? " expanded" : ""}`;
   const childrenClass = `tree-children${isExpanded ? " visible" : ""}`;
 
@@ -306,6 +335,10 @@ function initTreeSidebar(data, container) {
         <option value="date-asc">Oldest first</option>
         <option value="date-desc">Newest first</option>
       </select>
+    </div>
+    <div class="tree-expand-controls">
+      <button class="tree-expand-all">Expand all</button>
+      <button class="tree-collapse-all">Collapse all</button>
     </div>
   `;
 
@@ -381,6 +414,19 @@ function initTreeSidebar(data, container) {
 
   filterInput?.addEventListener("input", updateTree);
   sortSelect?.addEventListener("change", updateTree);
+
+  // Expand / collapse all
+  const nodeIds = Object.keys(docMap).filter(id => docMap[id].children && docMap[id].children.length > 0);
+
+  container.querySelector(".tree-expand-all")?.addEventListener("click", () => {
+    nodeIds.forEach(id => localStorage.setItem(`tree-expanded-${id}`, "true"));
+    updateTree();
+  });
+
+  container.querySelector(".tree-collapse-all")?.addEventListener("click", () => {
+    nodeIds.forEach(id => localStorage.setItem(`tree-expanded-${id}`, "false"));
+    updateTree();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -691,14 +737,16 @@ async function makeAPICall(conversation, currentDocContent, searchIndex) {
 // ---------------------------------------------------------------------------
 
 const ACCENT_PALETTE = [
-  { name: "Purple",  value: "#7F77DD" },
-  { name: "Blue",    value: "#3B82F6" },
-  { name: "Indigo",  value: "#6366F1" },
-  { name: "Teal",    value: "#14B8A6" },
-  { name: "Green",   value: "#10B981" },
-  { name: "Orange",  value: "#F59E0B" },
-  { name: "Red",     value: "#EF4444" },
-  { name: "Pink",    value: "#EC4899" },
+  { name: "Red",     value: "#F03E3E" },
+  { name: "Orange",  value: "#F76D2B" },
+  { name: "Yellow",  value: "#F5C518" },
+  { name: "Green",   value: "#5DBB3F" },
+  { name: "Mint",    value: "#1EC99A" },
+  { name: "Cyan",    value: "#17B8C8" },
+  { name: "Blue",    value: "#3B6FF0" },
+  { name: "Violet",  value: "#7C3FD9" },
+  { name: "Magenta", value: "#CC3EBC" },
+  { name: "Rose",    value: "#F0476A" },
 ];
 
 function applyTheme(mode, accent) {

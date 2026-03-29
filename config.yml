@@ -7,7 +7,7 @@ pages_dir: "pages"
 wiki:
   title: "My Wiki"
   description: "A Lorengine-powered wiki"
-  accent_color: "#7F77DD"
+  accent_color: "#00D9FF"
 
 ai:
   model: "claude-sonnet-4-6"
@@ -16,7 +16,7 @@ ai:
   enable_prompt_caching: true
 
 search:
-  max_results: 20
+  max_results: 10
   excerpt_length: 500
 
 github_pages:

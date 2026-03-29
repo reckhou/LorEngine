@@ -304,6 +304,41 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   color: var(--text-secondary);
 }
 
+.search-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0;
+  margin-top: var(--space-sm);
+}
+
+.pagination-btn {
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
+.pagination-btn:disabled {
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  min-width: 4rem;
+  text-align: center;
+}
+
 /* ── Markdown content ──────────────────────── */
 
 .markdown-body h2 {
@@ -471,9 +506,32 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-md) var(--space-sm);
+  background: var(--bg-secondary);
+}
+
+.tree-expand-controls {
+  display: flex;
+  gap: var(--space-xs);
+  padding: 0 var(--space-md) var(--space-sm);
   border-bottom: 1px solid var(--border);
   background: var(--bg-secondary);
+}
+
+.tree-expand-controls button {
+  flex: 1;
+  padding: 2px var(--space-xs);
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.tree-expand-controls button:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .tree-filter {
