@@ -187,7 +187,8 @@ It is immutable after creation — changing a filename breaks all `parent:` refe
 ## Visual editor — Decap CMS (`/admin/`)
 
 The wiki ships a visual markdown editor at `<site>/admin/`. It is powered by
-[Decap CMS](https://decapcms.org/) and commits directly to the GitHub repo.
+[Sveltia CMS](https://github.com/sveltia/sveltia-cms) (a drop-in Decap CMS replacement)
+and commits directly to the GitHub repo.
 
 ### Authentication
 
