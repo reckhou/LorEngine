@@ -248,7 +248,7 @@ function renderMarkdown(md) {
 
 function buildToc(md) {
   const headings = [];
-  const lines = md.split("\n");
+  const lines = md.split(/\r?\n/);
   for (const line of lines) {
     const m = line.match(/^(#{2,3})\s+(.+)$/);
     if (m) {

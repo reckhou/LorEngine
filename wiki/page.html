@@ -24,12 +24,21 @@
 
   <div class="page-layout">
     <aside class="tree-sidebar-wrap">
-      <button class="tree-toggle-btn" aria-label="Toggle page tree"></button>
+      <button class="tree-toggle-btn" aria-label="Toggle page tree">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+          <path fill="currentColor" d="M0 2.5A.5.5 0 0 1 .5 2H4a.5.5 0 0 1 .416.223L5 3h4.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-3z"/>
+          <line x1="1.5" y1="6" x2="1.5" y2="14" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="1.5" y1="9" x2="3.5" y2="9" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="1.5" y1="13" x2="3.5" y2="13" stroke="currentColor" stroke-width="1.2"/>
+          <rect fill="currentColor" x="3.5" y="7.5" width="8" height="3" rx="0.5"/>
+          <rect fill="currentColor" x="3.5" y="11.5" width="8" height="3" rx="0.5"/>
+        </svg>
+      </button>
       <div id="tree-sidebar" class="tree-sidebar visible"></div>
     </aside>
     <main class="page-content">
-      <div id="page-title-wrapper" class="page-title-wrapper"></div>
-      <div id="page-meta"></div>
+      <div id="page-title-wrapper" class="page-title-wrapper" hidden></div>
+      <div id="page-meta" hidden></div>
       <article id="page-body" class="markdown-body">
         <p class="loading">Loading document...</p>
       </article>
@@ -105,6 +114,7 @@
         // Render page title at top
         const titleWrapperEl = document.getElementById("page-title-wrapper");
         if (meta) {
+          titleWrapperEl.removeAttribute("hidden");
           const titleHtml = `<h1 class="page-title">${escapeHtml(meta.title)}</h1>`;
           safeSetInnerHTML(titleWrapperEl, titleHtml);
         }
@@ -112,6 +122,7 @@
         // Render metadata bar
         if (meta) {
           const metaEl = document.getElementById("page-meta");
+          metaEl.removeAttribute("hidden");
           const metaHtml = `
             <div class="doc-card-meta" style="margin-bottom: var(--space-lg);">
               ${makeBadge(meta.status)}
@@ -160,25 +171,58 @@
 
       initThemePanel();
 
-      // Tree sidebar toggle
-      const toggleBtn = document.querySelector(".tree-toggle-btn");
+      // ── Responsive sidebar helpers ───────────────────────
+      function setSidebarOpen(wrap, sidebar, open) {
+        if (open) {
+          sidebar.classList.add("visible");
+          wrap.classList.remove("collapsed");
+        } else {
+          sidebar.classList.remove("visible");
+          wrap.classList.add("collapsed");
+        }
+      }
+
+      // Tree sidebar — auto-collapses below 900px
+      const treeWrap   = document.querySelector(".tree-sidebar-wrap");
       const treeSidebar = document.querySelector(".tree-sidebar");
-      const treeWrap = document.querySelector(".tree-sidebar-wrap");
-      if (toggleBtn) {
-        toggleBtn.addEventListener("click", () => {
-          treeSidebar.classList.toggle("visible");
-          treeWrap.classList.toggle("collapsed");
+      const treeToggleBtn = document.querySelector(".tree-toggle-btn");
+      const treeMQ = window.matchMedia("(min-width: 900px)");
+
+      function applyTreeMQ(e) {
+        if (!treeWrap.classList.contains("user-toggled")) {
+          setSidebarOpen(treeWrap, treeSidebar, e.matches);
+        }
+      }
+      treeMQ.addEventListener("change", applyTreeMQ);
+      applyTreeMQ(treeMQ); // apply on load
+
+      if (treeToggleBtn) {
+        treeToggleBtn.addEventListener("click", () => {
+          treeWrap.classList.add("user-toggled");
+          const isOpen = treeSidebar.classList.contains("visible");
+          setSidebarOpen(treeWrap, treeSidebar, !isOpen);
         });
       }
 
-      // TOC sidebar toggle
-      const tocToggleBtn = document.querySelector(".toc-toggle-btn");
+      // TOC sidebar — auto-collapses below 1200px
+      const tocWrap   = document.querySelector(".toc-sidebar-wrap");
       const tocSidebar = document.querySelector(".toc-sidebar");
-      const tocWrap = document.querySelector(".toc-sidebar-wrap");
+      const tocToggleBtn = document.querySelector(".toc-toggle-btn");
+      const tocMQ = window.matchMedia("(min-width: 1200px)");
+
+      function applyTocMQ(e) {
+        if (!tocWrap.classList.contains("user-toggled")) {
+          setSidebarOpen(tocWrap, tocSidebar, e.matches);
+        }
+      }
+      tocMQ.addEventListener("change", applyTocMQ);
+      applyTocMQ(tocMQ); // apply on load
+
       if (tocToggleBtn) {
         tocToggleBtn.addEventListener("click", () => {
-          tocSidebar.classList.toggle("visible");
-          tocWrap.classList.toggle("collapsed");
+          tocWrap.classList.add("user-toggled");
+          const isOpen = tocSidebar.classList.contains("visible");
+          setSidebarOpen(tocWrap, tocSidebar, !isOpen);
         });
       }
     })();
