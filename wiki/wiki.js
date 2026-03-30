@@ -125,8 +125,7 @@ function renderDocList(data, container) {
   const html = sorted
     .map((doc) => {
       const excerpt = (doc.excerpt || "").slice(0, WIKI_CONFIG.search.excerptLength);
-      // Convert newlines to <br> for proper line wrapping
-      const excerptHtml = escapeHtml(excerpt).replace(/\n/g, "<br>");
+      const excerptHtml = escapeHtml(excerpt).replace(/\n/g, " ");
       return `
       <article class="doc-card">
         <h2 class="doc-card-title"><a href="${escapeHtml(docUrl(doc.id))}">${escapeHtml(doc.title)}</a></h2>

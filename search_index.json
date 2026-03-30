@@ -92,7 +92,7 @@
     ],
     "status": "draft",
     "last_updated": "2026-03-30",
-    "file_mtime": 1774895393.4016194,
+    "file_mtime": 1774897379.4988332,
     "headings": [
       "Project identity",
       "Audience and purpose",
@@ -103,8 +103,8 @@
       "Planned documents",
       "System prompt"
     ],
-    "excerpt": "This file configures the AI sidebar for your Lorengine wiki. Fill in each\nsection below — no developer tooling required. The wiki indexes this page\nand the AI sidebar reads it to give the AI context for every session.\nSee for a fully completed reference. Delete it\nafter setup.\nAim for under 1,000 to",
-    "body": "This file configures the AI sidebar for your Lorengine wiki. Fill in each\nsection below — no developer tooling required. The wiki indexes this page\nand the AI sidebar reads it to give the AI context for every session.\nSee for a fully completed reference. Delete it\nafter setup.\nAim for under 1,000 tokens of content. A warning appears in the AI sidebar\nabove 1,500 tokens (~6,000 characters). The leaner and more specific each\nsection, the better the AI performs.\n---\nProject identity\n[Describe your project here.]\n---\nAudience and purpose\n[Describe your audience and how they will use the AI sidebar.]\n---\nKey decisions\n1. [First settled decision.]\n2. [Second settled decision.]\n3. [Add as many as needed.]\n---\nWriting conventions\n- [Convention one.]\n- [Convention two.]\n---\nDomain glossary\n- [Term] — [Definition specific to this project.]\n---\nInspirations and references\n- [Reference — why it is relevant.]\n---\nPlanned documents\n- — [What this doc will cover.]\n---\nSystem prompt\nYou are an AI assistant embedded in the [project name] wiki, built on Lorengine.\n[One sentence describing the project for the AI's context.]\nHelp the user draft, extend, and refine documentation pages. Match the style\nand conventions of existing documents. When asked about something not yet\ndocumented, flag it as a gap and offer to draft a stub. Only reference\ndocuments that appear in the index — do not invent content.",
+    "excerpt": "This file configures the AI sidebar for your LorEngine wiki. Fill in each\nsection below — no developer tooling required. The wiki indexes this page\nand the AI sidebar reads it to give the AI context for every session.\nSee for a fully completed reference. Delete it\nafter setup.\nAim for under 1,000 to",
+    "body": "This file configures the AI sidebar for your LorEngine wiki. Fill in each\nsection below — no developer tooling required. The wiki indexes this page\nand the AI sidebar reads it to give the AI context for every session.\nSee for a fully completed reference. Delete it\nafter setup.\nAim for under 1,000 tokens of content. A warning appears in the AI sidebar\nabove 1,500 tokens (~6,000 characters). The leaner and more specific each\nsection, the better the AI performs.\n---\nProject identity\n[Describe your project here.]\n---\nAudience and purpose\n[Describe your audience and how they will use the AI sidebar.]\n---\nKey decisions\n1. [First settled decision.]\n2. [Second settled decision.]\n3. [Add as many as needed.]\n---\nWriting conventions\n- [Convention one.]\n- [Convention two.]\n---\nDomain glossary\n- [Term] — [Definition specific to this project.]\n---\nInspirations and references\n- [Reference — why it is relevant.]\n---\nPlanned documents\n- — [What this doc will cover.]\n---\nSystem prompt\nYou are an AI assistant embedded in the [project name] wiki, built on Lorengine.\n[One sentence describing the project for the AI's context.]\nHelp the user draft, extend, and refine documentation pages. Match the style\nand conventions of existing documents. When asked about something not yet\ndocumented, flag it as a gap and offer to draft a stub. Only reference\ndocuments that appear in the index — do not invent content.",
     "parent": null,
     "children": [],
     "backlinks": []
