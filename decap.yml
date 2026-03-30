@@ -12,8 +12,6 @@ collections:
     label: Pages
     folder: pages
     create: true
-    nested:
-      depth: 10
     slug: "{{slug}}"
     identifier_field: title
     fields:
