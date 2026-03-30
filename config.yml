@@ -1,7 +1,7 @@
 # config.yml — edit this in your fork, not in upstream
 
 github:
-  repo: "ProjectAii/TestWiki"
+  repo: "YOUR_USERNAME/YOUR_REPO"
   oauth_app_id: ""        # GitHub OAuth App Client ID — see README for setup
 
 # Folder scanned for wiki pages (relative to repo root). Defaults to "pages".
@@ -9,12 +9,12 @@ github:
 pages_dir: "pages"
 
 wiki:
-  title: "Test Wiki"
-  description: "Test Game."
+  title: "My Wiki"
+  description: "A LorEngine-powered wiki"
   accent_color: "#00D9FF"
 
 ai:
-  model: "claude-haiku-4-5"
+  model: "claude-sonnet-4-6"
   max_tokens: 1024
   enable_prompt_caching: true
 
@@ -31,4 +31,4 @@ github_pages:
 
 branding:
   favicon: ""
-  logo: "https://avatars.githubusercontent.com/u/272316653?s=400&u=fd10caed1236aeccdd4d398a5650594e29d32494&v=4"
+  logo: ""
