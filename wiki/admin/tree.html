@@ -82,13 +82,16 @@
 
   // ── Auth ───────────────────────────────────────────────────────────────────
   function loadGithubAuth() {
-    try {
-      const raw = localStorage.getItem('netlify-cms-user');
-      if (raw) {
-        const u = JSON.parse(raw);
-        if (u && u.token) return u.token;
-      }
-    } catch {}
+    // Try Sveltia CMS key first, then fall back to legacy Netlify/Decap key
+    for (const key of ['sveltia-cms.user', 'netlify-cms-user']) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const u = JSON.parse(raw);
+          if (u && u.token) return u.token;
+        }
+      } catch {}
+    }
     return null;
   }
 
