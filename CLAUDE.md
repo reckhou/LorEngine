@@ -218,14 +218,18 @@ jobs:
       - name: Sync upstream
         uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
         with:
-          upstream_sync_repo: YOUR_GITHUB_USERNAME/lorengine
+          upstream_sync_repo: reckhou/lorengine   # default — no setup required
           upstream_sync_branch: main
           target_sync_branch: upstream-sync   # PR from this branch, not direct to main
           target_repo_token: ${{ secrets.GITHUB_TOKEN }}
           test_mode: false
 ```
 
-Replace `YOUR_GITHUB_USERNAME/lorengine` with the actual upstream repo path.
+No setup required — the workflow tracks `reckhou/lorengine` by default. Your options as a wiki owner:
+
+1. **Leave as-is** — track the latest Lorengine engine automatically (recommended)
+2. **Delete this workflow** — stay pinned to whatever version you forked at
+3. **Change `upstream_sync_repo`** — track your own engine fork instead
 
 ---
 
