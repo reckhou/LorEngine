@@ -2,3 +2,4 @@ _site/
 __pycache__/
 *.pyc
 .claude/settings.local.json
+content_hashes.json
