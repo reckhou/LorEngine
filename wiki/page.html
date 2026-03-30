@@ -28,7 +28,7 @@
       <div id="tree-sidebar" class="tree-sidebar visible"></div>
     </aside>
     <main class="page-content">
-      <div id="page-toc"></div>
+      <div id="page-title-wrapper" class="page-title-wrapper"></div>
       <div id="page-meta"></div>
       <article id="page-body" class="markdown-body">
         <p class="loading">Loading document...</p>
@@ -36,21 +36,37 @@
       <div id="page-backlinks"></div>
     </main>
 
-    <aside class="page-sidebar">
-      <div class="ai-sidebar">
-        <div class="ai-sidebar-header">
-          <span>AI Assistant</span>
-          <span class="ai-toggle">&#8722;</span>
-        </div>
-        <div class="ai-sidebar-body">
-          <div class="ai-messages"></div>
-          <div class="ai-input-wrap">
-            <textarea class="ai-input" rows="2" placeholder="Ask about this document..."></textarea>
-            <button class="ai-send-btn">Send</button>
-          </div>
-        </div>
+    <aside class="toc-sidebar-wrap">
+      <button class="toc-toggle-btn" aria-label="Toggle table of contents"></button>
+      <div id="toc-sidebar" class="toc-sidebar visible">
+        <div id="page-toc"></div>
       </div>
     </aside>
+  </div>
+
+  <!-- Floating AI button -->
+  <button id="ai-float-btn" class="ai-float-btn" aria-label="Open AI Assistant">AI</button>
+
+  <!-- AI Modal -->
+  <div id="ai-modal-overlay" class="ai-modal-overlay"></div>
+  <div id="ai-modal" class="ai-modal">
+    <div class="ai-modal-header">
+      <h2>AI Assistant</h2>
+      <button class="ai-modal-close" aria-label="Close AI Assistant">&times;</button>
+    </div>
+    <div class="ai-modal-body">
+      <div id="ai-locked-overlay" class="ai-locked-overlay">
+        <div class="ai-locked-content">
+          <p>API key required to use AI Assistant</p>
+          <button id="ai-set-key-btn" class="ai-set-key-btn">Set API Key</button>
+        </div>
+      </div>
+      <div class="ai-messages"></div>
+      <div class="ai-input-wrap">
+        <textarea class="ai-input" rows="2" placeholder="Ask about this document..."></textarea>
+        <button class="ai-send-btn">Send</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/lunr@2/lunr.min.js"></script>
@@ -84,6 +100,13 @@
         // Update page title
         if (meta) {
           document.title = `${meta.title} — ${WIKI_CONFIG.title}`;
+        }
+
+        // Render page title at top
+        const titleWrapperEl = document.getElementById("page-title-wrapper");
+        if (meta) {
+          const titleHtml = `<h1 class="page-title">${escapeHtml(meta.title)}</h1>`;
+          safeSetInnerHTML(titleWrapperEl, titleHtml);
         }
 
         // Render metadata bar
@@ -120,9 +143,9 @@
           safeSetInnerHTML(backlinksEl, renderBacklinks(meta.backlinks, searchIndex));
         }
 
-        // Init tree sidebar and AI sidebar
+        // Init tree sidebar and TOC sidebar
         initTreeSidebar(searchIndex, document.getElementById("tree-sidebar"));
-        initAISidebar(body, searchIndex);
+        initTOCSidebar();
 
         // Scroll to heading anchor now that content is rendered
         if (window.location.hash) {
@@ -146,6 +169,20 @@
           treeWrap.classList.toggle("collapsed");
         });
       }
+
+      // TOC sidebar toggle
+      const tocToggleBtn = document.querySelector(".toc-toggle-btn");
+      const tocSidebar = document.querySelector(".toc-sidebar");
+      const tocWrap = document.querySelector(".toc-sidebar-wrap");
+      if (tocToggleBtn) {
+        tocToggleBtn.addEventListener("click", () => {
+          tocSidebar.classList.toggle("visible");
+          tocWrap.classList.toggle("collapsed");
+        });
+      }
+
+      // AI modal initialization
+      initAIModal(body, searchIndex);
     })();
   </script>
 </body>

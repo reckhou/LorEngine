@@ -275,6 +275,18 @@ function renderToc(headings) {
     </nav>`);
 }
 
+function initTOCSidebar() {
+  const tocContainer = document.getElementById("page-toc");
+  if (!tocContainer) return;
+
+  // TOC is already rendered in the page script, just ensure it's visible
+  const tocSidebar = document.querySelector(".toc-sidebar");
+  if (tocSidebar && tocSidebar.querySelector(".toc")) {
+    // TOC already exists in the container
+    return;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Tree Sidebar
 // ---------------------------------------------------------------------------
@@ -513,7 +525,7 @@ function autocompleteTitle(input, titleMap) {
 // API Key Modal
 // ---------------------------------------------------------------------------
 
-function showAPIKeyModal(callback) {
+function showAPIKeyModal(callback, onCancel) {
   // Create overlay and modal
   const overlay = document.createElement("div");
   overlay.className = "api-key-modal-overlay";
@@ -523,17 +535,18 @@ function showAPIKeyModal(callback) {
 
   const html = `
     <div class="api-key-modal-content">
-      <h2>Claude API Key Required</h2>
-      <p>Enter your Anthropic API key to use the AI sidebar. Your key is stored locally in your browser and never sent to our servers.</p>
+      <h2>Claude API Key</h2>
+      <p>Enter your Anthropic API key to use the AI assistant. Your key is stored locally in your browser and never sent to our servers.</p>
       <div class="api-key-input-group">
         <input type="password" class="api-key-input" placeholder="sk-..." autocomplete="off" aria-label="API key">
       </div>
       <label class="api-key-remember">
-        <input type="checkbox" class="api-key-remember-checkbox" checked>
+        <input type="checkbox" class="api-key-remember-checkbox">
         <span>Remember on this device</span>
       </label>
       <div class="api-key-buttons">
-        <button class="api-key-submit">Enable AI Sidebar</button>
+        <button class="api-key-cancel">Cancel</button>
+        <button class="api-key-submit">Save</button>
       </div>
     </div>
   `;
@@ -545,6 +558,7 @@ function showAPIKeyModal(callback) {
   const input = modal.querySelector(".api-key-input");
   const checkbox = modal.querySelector(".api-key-remember-checkbox");
   const submitBtn = modal.querySelector(".api-key-submit");
+  const cancelBtn = modal.querySelector(".api-key-cancel");
 
   function submit() {
     const key = input.value.trim();
@@ -557,8 +571,14 @@ function showAPIKeyModal(callback) {
     callback(key, remember);
   }
 
+  function cancel() {
+    overlay.remove();
+    if (onCancel) onCancel();
+  }
+
   input.focus();
   submitBtn.addEventListener("click", submit);
+  cancelBtn.addEventListener("click", cancel);
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -566,38 +586,35 @@ function showAPIKeyModal(callback) {
     }
   });
 
-  // Prevent closing by clicking overlay
+  // Allow closing by clicking overlay (outside the modal)
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
-      e.preventDefault();
+      cancel();
     }
   });
 }
 
 // ---------------------------------------------------------------------------
-// AI Sidebar
+// AI Modal (Floating)
 // ---------------------------------------------------------------------------
 
-function initAISidebar(currentDocContent, searchIndex) {
-  const header = document.querySelector(".ai-sidebar-header");
-  const body = document.querySelector(".ai-sidebar-body");
+function initAIModal(currentDocContent, searchIndex) {
+  const floatBtn = document.getElementById("ai-float-btn");
+  const modal = document.getElementById("ai-modal");
+  const overlay = document.getElementById("ai-modal-overlay");
+  const closeBtn = document.querySelector(".ai-modal-close");
+  const setKeyBtn = document.getElementById("ai-set-key-btn");
+  const lockedOverlay = document.getElementById("ai-locked-overlay");
   const input = document.querySelector(".ai-input");
   const sendBtn = document.querySelector(".ai-send-btn");
   const messagesEl = document.querySelector(".ai-messages");
 
-  if (!header || !body) return;
+  if (!floatBtn || !modal) return;
 
-  // Collapse/expand
-  header.addEventListener("click", () => {
-    body.classList.toggle("collapsed");
-    const arrow = header.querySelector(".ai-toggle");
-    if (arrow) arrow.textContent = body.classList.contains("collapsed") ? "+" : "\u2212";
-  });
-
-  // Determine API key: config > localStorage > modal
   let apiKey = WIKI_CONFIG.apiKey;
   let keySource = "config"; // "config" | "stored" | "user"
 
+  // Check for stored API key
   if (!apiKey) {
     const stored = localStorage.getItem("lorengine-api-key");
     if (stored) {
@@ -606,47 +623,67 @@ function initAISidebar(currentDocContent, searchIndex) {
     }
   }
 
-  if (!apiKey) {
-    // Show blocking modal
-    showAPIKeyModal((key, remember) => {
-      apiKey = key;
-      keySource = "user";
-      if (remember) {
-        localStorage.setItem("lorengine-api-key", key);
-      }
-      // Update global config and continue
-      WIKI_CONFIG.apiKey = key;
-      initAISidebar(currentDocContent, searchIndex);
-    });
-    return;
-  }
-
-  // Update global config if we got the key from localStorage
-  if (!WIKI_CONFIG.apiKey) {
+  // Update global config
+  if (apiKey) {
     WIKI_CONFIG.apiKey = apiKey;
-  }
-
-  // Add delete button if key was stored or provided by user
-  if (keySource !== "config" && header) {
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "ai-key-delete-btn";
-    deleteBtn.setAttribute("aria-label", "Delete saved API key");
-    deleteBtn.textContent = "⌫";
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (confirm("Delete saved API key?")) {
-        localStorage.removeItem("lorengine-api-key");
-        location.reload();
-      }
-    });
-    header.appendChild(deleteBtn);
   }
 
   const conversation = [];
 
+  function updateLockedState() {
+    if (WIKI_CONFIG.apiKey) {
+      lockedOverlay.classList.add("hidden");
+      input.disabled = false;
+      sendBtn.disabled = false;
+    } else {
+      lockedOverlay.classList.remove("hidden");
+      input.disabled = true;
+      sendBtn.disabled = true;
+    }
+  }
+
+  function showModal() {
+    modal.classList.add("visible");
+    overlay.classList.add("visible");
+    updateLockedState();
+    if (WIKI_CONFIG.apiKey) {
+      input.focus();
+    }
+  }
+
+  function closeModal() {
+    modal.classList.remove("visible");
+    overlay.classList.remove("visible");
+  }
+
+  // Modal controls
+  floatBtn.addEventListener("click", showModal);
+  closeBtn.addEventListener("click", closeModal);
+  overlay.addEventListener("click", closeModal);
+
+  // API key button in locked overlay
+  setKeyBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    showAPIKeyModal(
+      (key, remember) => {
+        apiKey = key;
+        keySource = "user";
+        if (remember) {
+          localStorage.setItem("lorengine-api-key", key);
+        }
+        WIKI_CONFIG.apiKey = key;
+        updateLockedState();
+        input.focus();
+      },
+      () => {
+        // Cancel button clicked
+      }
+    );
+  });
+
   async function sendMessage() {
     const text = input.value.trim();
-    if (!text) return;
+    if (!text || !WIKI_CONFIG.apiKey) return;
 
     input.value = "";
     conversation.push({ role: "user", content: text });
@@ -667,7 +704,7 @@ function initAISidebar(currentDocContent, searchIndex) {
       appendMessage("assistant", `Error: ${err.message}`);
     } finally {
       sendBtn.disabled = false;
-      input.disabled = false;
+      input.disabled = !WIKI_CONFIG.apiKey;
       input.focus();
     }
   }
@@ -686,11 +723,14 @@ function initAISidebar(currentDocContent, searchIndex) {
 
   sendBtn.addEventListener("click", sendMessage);
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !input.disabled) {
       e.preventDefault();
       sendMessage();
     }
   });
+
+  // Initial locked state
+  updateLockedState();
 }
 
 async function makeAPICall(conversation, currentDocContent, searchIndex) {
