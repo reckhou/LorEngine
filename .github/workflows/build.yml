@@ -3,8 +3,6 @@ name: Build and Deploy Wiki
 
 on:
   push:
-    paths: ['pages/**', 'wiki/**', 'build_wiki.py', 'config.yml', 'decap.yml', 'content_hashes.json']
-    tags: ['v*']
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
