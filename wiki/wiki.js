@@ -92,9 +92,12 @@ function docUrl(id) {
   return `${base}page.html?doc=${encodeURIComponent(id)}`;
 }
 
-function adminEditUrl(slug) {
+function adminEditUrl(id) {
+  // id is "pages/markdown-showcase/links-and-cross-references.md"
+  // CMS nested entry path needs "markdown-showcase/links-and-cross-references"
+  const cmsPath = id.replace(/^[^/]+\//, '').replace(/\.md$/, '');
   const base = WIKI_CONFIG.baseUrl ? WIKI_CONFIG.baseUrl + "/" : "";
-  return `${base}admin/#/collections/pages/entries/${encodeURIComponent(slug)}`;
+  return `${base}admin/#/collections/pages/entries/${cmsPath}`;
 }
 
 function adminNewUrl() {

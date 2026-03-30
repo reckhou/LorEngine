@@ -136,8 +136,8 @@
         const newBtn = document.getElementById('new-page-btn');
         if (newBtn) { newBtn.removeAttribute('hidden'); newBtn.href = adminNewUrl(); }
         const editBtn = document.getElementById('edit-page-btn');
-        if (editBtn && meta && meta.slug) {
-          editBtn.href = adminEditUrl(meta.slug);
+        if (editBtn && meta && meta.id) {
+          editBtn.href = adminEditUrl(meta.id);
           editBtn.removeAttribute('hidden');
         }
 
