@@ -2,6 +2,7 @@
 
 github:
   repo: "ProjectAii/TestWiki"
+  oauth_app_id: ""        # GitHub OAuth App Client ID — see README for setup
 
 # Folder scanned for wiki pages (relative to repo root). Defaults to "pages".
 # Set to "docs" if you prefer the old layout.

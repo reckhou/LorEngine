@@ -2,6 +2,8 @@ backend:
   name: github
   repo: {{GITHUB_REPO}}
   branch: master
+  auth_type: pkce
+  app_id: {{GITHUB_OAUTH_APP_ID}}
   auth_scope: repo
 
 media_folder: pages/assets

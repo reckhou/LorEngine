@@ -199,6 +199,7 @@ def load_config(root):
         "pages_dir": "pages",
         "github": {
             "repo": "",
+            "oauth_app_id": "",
         },
     }
 
@@ -446,7 +447,9 @@ def assemble_site(root, config, search_index):
     if decap_config.exists():
         decap_content = decap_config.read_text(encoding="utf-8")
         github_repo = str(config.get("github", {}).get("repo", ""))
+        oauth_app_id = str(config.get("github", {}).get("oauth_app_id", ""))
         decap_content = decap_content.replace("{{GITHUB_REPO}}", github_repo)
+        decap_content = decap_content.replace("{{GITHUB_OAUTH_APP_ID}}", oauth_app_id)
         (admin_dir / "config.yml").write_text(decap_content, encoding="utf-8")
 
     return site_dir

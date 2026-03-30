@@ -9,18 +9,27 @@ A reusable, self-hosted wiki system for game design documentation (or any markdo
 
 ## Quick Setup
 
-1. Click **"Use this template"** on GitHub (not "Fork" — template gives a clean history)
-2. Clone your new repo locally
-3. Delete `docs/example-doc.md`
-4. Edit `config.yml` with your wiki title and settings
-5. Create `CLAUDE.local.md` with your project context (see template in `CLAUDE.md`)
-6. Add `ANTHROPIC_API_KEY` to **Settings > Secrets and variables > Actions**
-7. Enable **GitHub Pages** — source: **GitHub Actions**
-8. Push a doc to `docs/` and watch the wiki build
+1. Create a fork of this repository.
+2. Enable **GitHub Pages** — source: **GitHub Actions**
+3. Check **Actions** and enable all of them
+4. Edit `config.yml` — set `github.repo` to `YOUR_USERNAME/YOUR_REPO`, update wiki title and settings. Committing this file triggers the first **Build and Deploy Wiki** action.
+5. Check **GitHub Pages** for site address. New site might take 5–10 minutes to activate.
+
+### Enabling the visual editor (`/admin/`)
+
+The wiki includes a visual markdown editor powered by [Decap CMS](https://decapcms.org/). It requires a one-time GitHub OAuth App setup:
+
+1. Go to **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App**
+2. Set **Authorization callback URL** to `https://YOUR_USERNAME.github.io/YOUR_REPO/admin/`
+3. Copy the **Client ID** from the app's settings page
+4. Paste it into `config.yml` under `github.oauth_app_id`
+5. Commit — the next build wires it in automatically
+
+The Client ID is not a secret and is safe to commit. No client secret is needed (the editor uses PKCE auth, which works entirely client-side).
 
 ## Writing Documents
 
-Every markdown file in `docs/` needs YAML frontmatter:
+Every markdown file in `pages/` needs YAML frontmatter:
 
 ```yaml
 ---
@@ -52,10 +61,10 @@ See `CLAUDE.md` for the full configuration reference.
 
 ## How It Works
 
-`build_wiki.py` runs on every push (to `docs/`, `build_wiki.py`, or `config.yml`), daily at 06:00 UTC, or on manual dispatch. It:
+`build_wiki.py` runs on every push (to `pages/`, `build_wiki.py`, or `config.yml`), daily at 06:00 UTC, or on manual dispatch. It:
 
 1. Reads `config.yml` for wiki metadata
-2. Parses all markdown files in `docs/`
+2. Parses all markdown files in `pages/`
 3. Generates `search_index.json` for client-side search
 4. Assembles `_site/` with injected config values
 5. Deploys to GitHub Pages
