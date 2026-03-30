@@ -1,4 +1,4 @@
-/* Lorengine — wiki.js
+/* LorEngine — wiki.js
    Shared logic: search index, Lunr, markdown rendering, AI sidebar.
    Vanilla JS, ES2020+. No frameworks.
    All HTML inserted via innerHTML is sanitized through DOMPurify. */

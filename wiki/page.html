@@ -11,9 +11,9 @@
   <script>
     // Apply stored theme/accent synchronously before first paint to prevent flash.
     (function () {
-      var a = localStorage.getItem("lorengine-accent");
+      var a = localStorage.getItem("LorEngine-accent");
       if (a) document.documentElement.style.setProperty("--accent", a);
-      var m = localStorage.getItem("lorengine-theme");
+      var m = localStorage.getItem("LorEngine-theme");
       if (m) document.documentElement.setAttribute("data-theme", m);
     })();
   </script>
@@ -190,8 +190,8 @@
         initAIModal(body, searchIndex, docId);
 
         // Sidebars: toggle, MQ, resize, persistence
-        initSidebar(document.querySelector(".tree-sidebar-wrap"), "right", "lorengine-tree-width");
-        initSidebar(document.querySelector(".toc-sidebar-wrap"), "left", "lorengine-toc-width");
+        initSidebar(document.querySelector(".tree-sidebar-wrap"), "right", "LorEngine-tree-width");
+        initSidebar(document.querySelector(".toc-sidebar-wrap"), "left", "LorEngine-toc-width");
 
         // Scroll to heading anchor now that content is rendered
         if (window.location.hash) {

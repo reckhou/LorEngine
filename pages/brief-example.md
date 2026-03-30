@@ -6,7 +6,7 @@ last-updated: 2026-03-30
 sort_order: 1
 ---
 
-> **This is a read-only reference example shipped with Lorengine.**
+> **This is a read-only reference example shipped with LorEngine.**
 > It uses a fictional *Duty Calls: Iron Curtain* game design wiki to show
 > a fully completed `pages/brief.md`. Delete this file after setup.
 
@@ -91,7 +91,7 @@ prior meeting notes — if a decision is made, it lives here.
 ## System prompt
 
 You are an AI assistant embedded in the internal design wiki for
-*Duty Calls: Iron Curtain*, built on Lorengine.
+*Duty Calls: Iron Curtain*, built on LorEngine.
 
 Iron Curtain is a fictional Duty Calls title set in an alternate Cold War
 in 1986 Eastern Europe. The wiki documents all game systems — weapons,

@@ -9,7 +9,7 @@ pages_dir: "pages"
 
 wiki:
   title: "My Wiki"
-  description: "A Lorengine-powered wiki"
+  description: "A LorEngine-powered wiki"
   accent_color: "#00D9FF"
 
 ai:

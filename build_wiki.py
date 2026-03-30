@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lorengine build script — generates search_index.json and assembles _site/.
+"""LorEngine build script — generates search_index.json and assembles _site/.
 
 Stdlib only (Python 3.11+). No pip dependencies.
 """
@@ -177,7 +177,7 @@ def load_config(root):
     defaults = {
         "wiki": {
             "title": "My Wiki",
-            "description": "A Lorengine-powered wiki",
+            "description": "A LorEngine-powered wiki",
             "accent_color": "#7F77DD",
         },
         "ai": {
@@ -520,7 +520,7 @@ def auto_update_timestamps(root, entries, pages_dir="pages"):
 def main():
     root = Path(__file__).resolve().parent
 
-    print("Lorengine build starting...")
+    print("LorEngine build starting...")
 
     # 1. Load config
     config, defaults = load_config(root)

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - YYYY-MM-DD
 
 ### Added
-- Lorengine wiki engine with build script
+- LorEngine wiki engine with build script
 - Static site generation with search index
 - Client-side full-text search via Lunr.js
 - AI sidebar for document assistance

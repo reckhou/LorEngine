@@ -1,6 +1,6 @@
-# Lorengine — Claude Code Context
+# LorEngine — Claude Code Context
 
-This file documents the **Lorengine engine** (upstream). It is owned by the upstream
+This file documents the **LorEngine engine** (upstream). It is owned by the upstream
 repo and should never be edited in a downstream fork.
 
 Project-specific context lives in `pages/brief.md` in the downstream repo.
@@ -10,7 +10,7 @@ Claude Code reads both files. Start there for content-specific instructions.
 
 ## What this repo is
 
-**Lorengine** is a reusable, self-hosted wiki system designed for game design
+**LorEngine** is a reusable, self-hosted wiki system designed for game design
 documentation (or any markdown-based knowledge base). It provides:
 
 - A static wiki site served via GitHub Pages — zero ops, zero cost
@@ -22,7 +22,7 @@ The engine is content-agnostic. All actual documentation lives in the downstream
 
 ---
 
-## Repo structure (upstream — Lorengine only)
+## Repo structure (upstream — LorEngine only)
 
 ```
 /
@@ -54,7 +54,7 @@ The engine is content-agnostic. All actual documentation lives in the downstream
 | Build script | Upstream | `build_wiki.py` | No |
 | GitHub Actions | Upstream | `.github/workflows/build.yml` | No |
 | Upstream sync action | Upstream | `.github/workflows/sync-upstream.yml` | No |
-| Lorengine docs | Upstream | `CLAUDE.md` | No |
+| LorEngine docs | Upstream | `CLAUDE.md` | No |
 | Example doc | Upstream | `docs/example-doc.md` | No (delete after fork) |
 | Project docs | Downstream | `docs/*.md` | Yes — this is the point |
 | Project context | Downstream | `pages/brief.md` | Yes — this is the point |
@@ -227,7 +227,7 @@ jobs:
 
 No setup required — the workflow tracks `reckhou/lorengine` by default. Your options as a wiki owner:
 
-1. **Leave as-is** — track the latest Lorengine engine automatically (recommended)
+1. **Leave as-is** — track the latest LorEngine engine automatically (recommended)
 2. **Delete this workflow** — stay pinned to whatever version you forked at
 3. **Change `upstream_sync_repo`** — track your own engine fork instead
 
@@ -247,7 +247,7 @@ No setup required — the workflow tracks `reckhou/lorengine` by default. Your o
 - `CLAUDE.md` — same
 
 If a downstream fork needs to extend build behaviour, add a `build_local.py`
-that imports and wraps `build_wiki.py`, and call it instead. Lorengine will
+that imports and wraps `build_wiki.py`, and call it instead. LorEngine will
 never create a file with that name — it is a reserved extension point.
 
 ---
@@ -281,10 +281,10 @@ never create a file with that name — it is a reserved extension point.
 ## Notes for Claude Code
 
 - Read `CLAUDE.md` (this file) then `pages/brief.md` before any task
-- Lorengine and content are strictly separated — never mix them
+- LorEngine and content are strictly separated — never mix them
 - Test `build_wiki.py` against `docs/example-doc.md` before building the UI
 - `config.yml` is the only intentional customisation point for forks; if a
   downstream need cannot be met via config, consider adding a config option
-  to Lorengine upstream rather than letting the fork patch engine files
+  to LorEngine upstream rather than letting the fork patch engine files
 - Prefer stdlib over pip in `build_wiki.py` — the zero-dep constraint is load-bearing
 - When in doubt, favour the simpler implementation

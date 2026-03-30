@@ -6,7 +6,7 @@ last-updated: 2026-03-30
 sort_order: 0
 ---
 
-This file configures the AI sidebar for your Lorengine wiki. Fill in each
+This file configures the AI sidebar for your LorEngine wiki. Fill in each
 section below — no developer tooling required. The wiki indexes this page
 and the AI sidebar reads it to give the AI context for every session.
 

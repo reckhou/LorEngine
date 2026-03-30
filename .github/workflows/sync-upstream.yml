@@ -21,10 +21,10 @@ jobs:
       - name: Sync upstream
         uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
         with:
-          # Points to the official Lorengine upstream by default.
+          # Points to the official LorEngine upstream by default.
           # Only change this if you maintain your own engine fork and want to
           # track that instead. Your three options as a wiki owner:
-          #   1. Leave as-is — track the latest Lorengine engine automatically
+          #   1. Leave as-is — track the latest LorEngine engine automatically
           #   2. Delete this workflow — stay on whatever version you forked at
           #   3. Change the repo below — track your own engine fork
           upstream_sync_repo: reckhou/lorengine

@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — {{WIKI_TITLE}}</title>
   <style>
-    #lorengine-nav {
+    #LorEngine-nav {
       position: fixed; top: 0; right: 0; z-index: 9999;
       padding: 6px 14px; background: rgba(0,0,0,0.75);
       border-radius: 0 0 0 8px; display: flex; gap: 12px;
     }
-    #lorengine-nav a { color: #ccc; text-decoration: none; font-size: 13px; }
-    #lorengine-nav a:hover { color: #fff; }
+    #LorEngine-nav a { color: #ccc; text-decoration: none; font-size: 13px; }
+    #LorEngine-nav a:hover { color: #fff; }
   </style>
 </head>
 <body>
-  <div id="lorengine-nav">
+  <div id="LorEngine-nav">
     <a href="../">&#8592; Wiki</a>
     <a href="tree.html">Tree Manager</a>
   </div>
@@ -39,7 +39,7 @@
         }
       }
     } catch (e) {
-      console.warn('[Lorengine] Could not load search_index for pre-checks:', e);
+      console.warn('[LorEngine] Could not load search_index for pre-checks:', e);
     }
 
     CMS.registerEventListener({
@@ -58,7 +58,7 @@
 
         // Soft warn: duplicate title (allowed if slugs differ, but discouraged)
         if (isNew && existingTitles.has(title.toLowerCase())) {
-          console.info(`[Lorengine] Title "${title}" already exists on another page. Consider a more specific title.`);
+          console.info(`[LorEngine] Title "${title}" already exists on another page. Consider a more specific title.`);
           const banner = document.createElement('div');
           const safeTitle = title.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
           banner.textContent = `Note: Another page is already named "${safeTitle}". Consider a more specific title.`;

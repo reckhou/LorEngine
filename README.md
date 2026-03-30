@@ -1,4 +1,4 @@
-# Lorengine
+# LorEngine
 
 A reusable, self-hosted wiki system for game design documentation (or any markdown-based knowledge base).
 
@@ -69,13 +69,13 @@ Forks receive upstream engine updates via the `sync-upstream.yml` workflow, whic
 1. Open `.github/workflows/sync-upstream.yml`
 2. Replace `YOUR_GITHUB_USERNAME/lorengine` with the actual upstream repo path:
    ```yaml
-   upstream_sync_repo: reckhou/lorengine   # or your own Lorengine fork
+   upstream_sync_repo: reckhou/lorengine   # or your own LorEngine fork
    ```
 3. Commit the change — the workflow will now run automatically every Monday
 
 The workflow includes a guard (`if: github.repository != 'reckhou/lorengine'`) so it silently skips if run in the upstream repo itself.
 
-### If you forked Lorengine to maintain your own engine variant
+### If you forked LorEngine to maintain your own engine variant
 
 Update the guard condition to match your repo so it skips there too:
 ```yaml
