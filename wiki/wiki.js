@@ -108,7 +108,7 @@ function adminNewUrl() {
 
 function renderDocList(data, container) {
   if (!data.length) {
-    container.textContent = "No documents found. Add markdown files to the docs/ directory to get started.";
+    container.textContent = "No documents found. Add markdown files to the pages/ directory to get started.";
     container.className = "empty-state";
     return;
   }
