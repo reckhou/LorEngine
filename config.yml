@@ -1,19 +1,19 @@
 # config.yml — edit this in your fork, not in upstream
 
 github:
-  repo: "YOUR_USERNAME/YOUR_REPO"
+  repo: "ProjectAii/TestWiki"
 
 # Folder scanned for wiki pages (relative to repo root). Defaults to "pages".
 # Set to "docs" if you prefer the old layout.
 pages_dir: "pages"
 
 wiki:
-  title: "My Wiki"
-  description: "A LorEngine-powered wiki"
+  title: "Test Wiki"
+  description: "Test Game."
   accent_color: "#00D9FF"
 
 ai:
-  model: "claude-sonnet-4-6"
+  model: "claude-haiku-4-5"
   max_tokens: 1024
   enable_prompt_caching: true
 
@@ -22,8 +22,8 @@ search:
   excerpt_length: 500
 
 github_pages:
-  base_url: ""
+  base_url: "https://github.com/ProjectAii/TestWiki"
 
 branding:
   favicon: ""
-  logo: ""
+  logo: "https://avatars.githubusercontent.com/u/272316653?s=400&u=fd10caed1236aeccdd4d398a5650594e29d32494&v=4"
