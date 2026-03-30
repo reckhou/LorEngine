@@ -182,7 +182,6 @@ def load_config(root):
         },
         "ai": {
             "model": "claude-sonnet-4-6",
-            "system_prompt_file": "CLAUDE.local.md",
             "max_tokens": 1024,
             "enable_prompt_caching": True,
         },
@@ -300,6 +299,11 @@ def compute_backlinks(entries, pages_dir="pages"):
 # Search index generation
 # ---------------------------------------------------------------------------
 
+# Pages excluded from the search index (reference artifacts, not content).
+# These are served as static files but not indexed or shown in navigation.
+EXCLUDED_FROM_INDEX = {"brief-example.md"}
+
+
 def build_search_index(root, pages_dir="pages"):
     """Walk the pages directory and build the search index entries.
 
@@ -318,6 +322,9 @@ def build_search_index(root, pages_dir="pages"):
     for md_path in sorted(docs_dir.rglob("*.md")):
         rel_path = md_path.relative_to(root).as_posix()
         slug = md_path.stem  # filename stem = slug (e.g. "getting-started")
+
+        if md_path.name in EXCLUDED_FROM_INDEX:
+            continue
 
         # Hard fail: duplicate slug
         if slug in slug_seen:
@@ -405,7 +412,6 @@ def assemble_site(root, config, search_index):
         "{{ACCENT_COLOR}}": str(config["wiki"]["accent_color"]),
         "{{AI_MODEL}}": str(config["ai"]["model"]),
         "{{AI_MAX_TOKENS}}": str(config["ai"]["max_tokens"]),
-        "{{AI_SYSTEM_PROMPT_FILE}}": str(config["ai"]["system_prompt_file"]),
         "{{AI_ENABLE_PROMPT_CACHING}}": str(config["ai"]["enable_prompt_caching"]).lower(),
         "{{BASE_URL}}": str(config["github_pages"]["base_url"]),
         "{{SEARCH_MAX_RESULTS}}": str(config["search"]["max_results"]),

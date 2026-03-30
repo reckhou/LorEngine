@@ -3,7 +3,7 @@
 This file documents the **Lorengine engine** (upstream). It is owned by the upstream
 repo and should never be edited in a downstream fork.
 
-Project-specific context lives in `CLAUDE.local.md` in the downstream repo.
+Project-specific context lives in `pages/brief.md` in the downstream repo.
 Claude Code reads both files. Start there for content-specific instructions.
 
 ---
@@ -57,7 +57,7 @@ The engine is content-agnostic. All actual documentation lives in the downstream
 | Lorengine docs | Upstream | `CLAUDE.md` | No |
 | Example doc | Upstream | `docs/example-doc.md` | No (delete after fork) |
 | Project docs | Downstream | `docs/*.md` | Yes — this is the point |
-| Project context | Downstream | `CLAUDE.local.md` | Yes — this is the point |
+| Project context | Downstream | `pages/brief.md` | Yes — this is the point |
 | Secrets / config | Downstream | GitHub repo secrets + `config.yml` | Yes |
 
 **Rule:** if a file is in this table as "No", a downstream fork must never commit
@@ -80,7 +80,6 @@ wiki:
 
 ai:
   model: "claude-sonnet-4-6"   # or claude-haiku-4-5-20251001 for lower cost
-  system_prompt_file: "CLAUDE.local.md"
   max_tokens: 1024
   enable_prompt_caching: true
 
@@ -155,10 +154,11 @@ The sidebar fires a Claude API call when the user submits a question or drafting
 request. Cost is kept minimal by design.
 
 **Every call includes:**
-1. System prompt — from `CLAUDE.local.md` in the downstream repo (cached)
-2. Doc index — titles, tags, one-line excerpts of every doc (~500 tokens, cached)
-3. Current page full content — the markdown of the page being viewed
-4. Conversation history — last 4 turns only (prevents runaway context growth)
+1. System prompt — the `## System prompt` section of `pages/brief.md` (cached)
+2. Project context — all other sections of `pages/brief.md` (key decisions, glossary, conventions — cached)
+3. Doc index — titles, tags, one-line excerpts of every doc (~500 tokens, cached)
+4. Current page full content — the markdown of the page being viewed (omitted when viewing `pages/brief.md` itself)
+5. Conversation history — last 4 turns only (prevents runaway context growth)
 5. User's new message
 
 **Never included:** full content of other docs. Cross-doc queries are handled
@@ -237,7 +237,7 @@ No setup required — the workflow tracks `reckhou/lorengine` by default. Your o
 
 **Upstream will never modify:**
 - `docs/` (except `example-doc.md` which forks should delete after setup)
-- `CLAUDE.local.md`
+- `pages/brief.md` content (the file ships as a template; forks fill it in)
 - `config.yml`
 
 **Downstream forks must never modify:**
@@ -271,49 +271,16 @@ never create a file with that name — it is a reserved extension point.
 2. Clone your new repo locally
 3. Delete `docs/example-doc.md`
 4. Edit `config.yml` with your wiki title and settings
-5. Create `CLAUDE.local.md` with your project context (see template below)
+5. Fill in `pages/brief.md` with your project identity, key decisions, and system prompt (see `pages/brief-example.md` for a reference)
 6. Add `ANTHROPIC_API_KEY` to GitHub Actions secrets
 7. Enable GitHub Pages → source: GitHub Actions
 8. Push a doc to `docs/` and watch the wiki build
 
 ---
 
-## CLAUDE.local.md template (for Lorengine forks)
-
-Create this file in your fork. Claude Code reads it alongside this file.
-Upstream will never touch it.
-
-```markdown
-# [Your Project] — project context
-
-## What this wiki is about
-[One paragraph describing the project]
-
-## Key decisions already made
-[Decisions Claude should not relitigate]
-
-## Doc conventions
-[Any project-specific writing conventions beyond the engine defaults]
-
-## Planned documents
-[Docs not yet written but expected]
-
-## AI sidebar system prompt
-Used verbatim as the Claude API system prompt in the wiki sidebar.
-Keep under 500 tokens so it fits comfortably in the cached prefix.
-
----
-You are an AI assistant embedded in the [project] wiki.
-[Project description]
-[Tone and style instructions]
----
-```
-
----
-
 ## Notes for Claude Code
 
-- Read `CLAUDE.md` (this file) then `CLAUDE.local.md` before any task
+- Read `CLAUDE.md` (this file) then `pages/brief.md` before any task
 - Lorengine and content are strictly separated — never mix them
 - Test `build_wiki.py` against `docs/example-doc.md` before building the UI
 - `config.yml` is the only intentional customisation point for forks; if a

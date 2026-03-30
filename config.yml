@@ -1,5 +1,8 @@
 # config.yml — edit this in your fork, not in upstream
 
+github:
+  repo: "YOUR_USERNAME/YOUR_REPO"
+
 # Folder scanned for wiki pages (relative to repo root). Defaults to "pages".
 # Set to "docs" if you prefer the old layout.
 pages_dir: "pages"
@@ -11,7 +14,6 @@ wiki:
 
 ai:
   model: "claude-sonnet-4-6"
-  system_prompt_file: "CLAUDE.local.md"
   max_tokens: 1024
   enable_prompt_caching: true
 
