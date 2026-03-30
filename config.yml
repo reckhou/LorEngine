@@ -22,6 +22,10 @@ search:
   excerpt_length: 500
 
 github_pages:
+  # Leave base_url empty — this is correct for almost all setups, including
+  # GitHub Pages project sites (e.g. username.github.io/repo-name/).
+  # Only set this if you are redirecting from a custom domain to a subdirectory
+  # path (e.g. base_url: "/my-wiki"). Do NOT set it to your repo name.
   base_url: ""
 
 branding:
