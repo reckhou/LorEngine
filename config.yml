@@ -22,7 +22,7 @@ search:
   excerpt_length: 500
 
 github_pages:
-  base_url: "https://github.com/ProjectAii/TestWiki"
+  base_url: ""
 
 branding:
   favicon: ""
