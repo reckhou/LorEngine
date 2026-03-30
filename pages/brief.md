@@ -26,7 +26,7 @@ One paragraph. What is this project? What is the wiki for?
 This is the first thing the AI reads — it sets the frame for every session.
 -->
 
-[Describe your project here.]
+ProjectAii/TestWiki
 
 ---
 
@@ -37,7 +37,7 @@ Who reads and writes in this wiki? What do they primarily use the AI
 sidebar for — drafting new docs, answering questions, extending sections?
 -->
 
-[Describe your audience and how they will use the AI sidebar.]
+ProjectAii/TestWiki
 
 ---
 
