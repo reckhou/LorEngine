@@ -14,12 +14,15 @@
     #status { margin: 10px 0; min-height: 22px; font-size: 13px; color: #aaa; }
     #status.error { color: #f66; }
     #status.success { color: #6c6; }
-    #save-btn {
-      padding: 7px 18px; background: #3b6ff0; border: none; border-radius: 6px;
-      color: #fff; font-size: 14px; cursor: pointer; margin-bottom: 16px;
+    #toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .toolbar-btn {
+      padding: 7px 0; width: 120px; background: #3b6ff0; border: none; border-radius: 6px;
+      color: #fff; font-size: 14px; cursor: pointer; text-align: center;
     }
-    #save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    #save-btn:hover:not(:disabled) { background: #2a5cd0; }
+    .toolbar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .toolbar-btn:hover:not(:disabled) { background: #2a5cd0; }
+    .toolbar-btn.active { background: #1d4a1d; box-shadow: inset 0 0 0 2px #4caf50; }
+    .toolbar-btn.active:hover:not(:disabled) { background: #255c25; }
     .tree-root, .tree-children { list-style: none; padding: 0; }
     .tree-children { padding-left: 24px; }
     .tree-node { position: relative; margin: 2px 0; }
@@ -37,8 +40,15 @@
       height: 2px; background: #3b6ff0; border-radius: 2px;
     }
     .node-row.over-child { outline: 2px solid #3b6ff0; background: #1e3a5f; }
-    .drag-handle { cursor: grab; color: #555; font-size: 14px; flex-shrink: 0; line-height: 1; }
+    .collapse-toggle {
+      width: 14px; font-size: 10px; color: #777;
+      flex-shrink: 0; text-align: center; line-height: 1;
+    }
+    .collapse-toggle.has-children { cursor: pointer; }
+    .collapse-toggle.has-children:hover { color: #ccc; }
+    .drag-handle { cursor: grab; color: #555; font-size: 14px; flex-shrink: 0; line-height: 1; opacity: 1; }
     .drag-handle:active { cursor: grabbing; }
+    .drag-handle.hidden { opacity: 0; pointer-events: none; }
     .node-title { flex: 1; font-size: 14px; }
     .node-title.changed { color: #f0a500; }
     .node-slug { font-size: 11px; color: #666; }
@@ -57,9 +67,13 @@
   </div>
   <h1>Tree Manager</h1>
   <div id="status">Loading...</div>
-  <button id="save-btn" disabled>Save Changes</button>
+  <div id="toolbar">
+    <button class="toolbar-btn" id="save-btn" disabled>Save Changes</button>
+    <button class="toolbar-btn" id="collapse-btn">Collapse All</button>
+    <button class="toolbar-btn" id="edit-order-btn">Edit Order</button>
+  </div>
   <div id="tree-container"></div>
-  <div id="drop-root">&#x2913; Drop here to make root-level</div>
+  <div id="drop-root" style="display:none">&#x2913; Drop here to make root-level</div>
 
   <script>
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -79,6 +93,8 @@
   let draggedId = null;
   let githubToken = null;
   let githubRepo = null;
+  let editOrderMode = false;
+  let collapsedIds = new Set();
 
   // ── Auth ───────────────────────────────────────────────────────────────────
   function loadGithubAuth() {
@@ -95,12 +111,43 @@
     return null;
   }
 
+  // ── Tree order cache ───────────────────────────────────────────────────────
+  // Persists sort_order/parent overrides across page refreshes so the tree
+  // shows the saved custom order before GitHub Actions rebuilds search_index.json.
+  const CACHE_KEY = 'lorengine-tree-order';
+  const CACHE_TTL = 7_200_000; // 2 hours — well beyond a typical Actions rebuild
+
+  function saveTreeStateToCache() {
+    const cache = {};
+    for (const [id, s] of Object.entries(treeState)) {
+      cache[id] = { parent: s.parent, sort_order: s.sort_order };
+    }
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), state: cache }));
+    } catch {}
+  }
+
+  function applyTreeStateCache() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return;
+      const { ts, state } = JSON.parse(raw);
+      if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(CACHE_KEY); return; }
+      for (const [id, s] of Object.entries(state)) {
+        if (treeState[id]) {
+          treeState[id].parent = s.parent;
+          treeState[id].sort_order = s.sort_order;
+        }
+      }
+    } catch {}
+  }
+
   // ── Data loading ───────────────────────────────────────────────────────────
   async function loadData() {
     const base = window.location.pathname.replace(/\/admin\/?.*$/, '');
 
-    // Load search index
-    const indexResp = await fetch(`${base}/search_index.json`);
+    // Cache-bust to avoid stale search_index.json from browser cache
+    const indexResp = await fetch(`${base}/search_index.json?t=${Date.now()}`);
     if (!indexResp.ok) throw new Error('Could not load search_index.json');
     const index = await indexResp.json();
 
@@ -110,7 +157,7 @@
       idToSlug[doc.id] = doc.slug;
       treeState[doc.id] = {
         parent: doc.parent || null,
-        sort_order: doc.sort_order || 100
+        sort_order: Number(doc.sort_order) || 100
       };
     }
 
@@ -256,18 +303,35 @@
     const doc = docMap[id];
     if (!doc) return null;
 
+    const children = getSortedChildren(id);
+    const hasChildren = children.length > 0;
+    const isCollapsed = collapsedIds.has(id);
+
     const li = document.createElement('li');
     li.className = 'tree-node';
     li.dataset.id = id;
 
     const row = document.createElement('div');
     row.className = 'node-row';
-    row.draggable = true;
     row.dataset.id = id;
+    if (editOrderMode) row.draggable = true;
+
+    // Collapse toggle
+    const toggle = document.createElement('span');
+    toggle.className = 'collapse-toggle' + (hasChildren ? ' has-children' : '');
+    if (hasChildren) {
+      toggle.textContent = isCollapsed ? '\u25B6' : '\u25BC';
+      toggle.addEventListener('click', e => {
+        e.stopPropagation();
+        if (collapsedIds.has(id)) collapsedIds.delete(id);
+        else collapsedIds.add(id);
+        renderTree();
+      });
+    }
 
     // Drag handle
     const handle = document.createElement('span');
-    handle.className = 'drag-handle';
+    handle.className = 'drag-handle' + (editOrderMode ? '' : ' hidden');
     handle.textContent = '\u2807';
     handle.setAttribute('aria-hidden', 'true');
 
@@ -286,47 +350,49 @@
     orderEl.className = 'node-order';
     orderEl.textContent = treeState[id].sort_order;
 
+    row.appendChild(toggle);
     row.appendChild(handle);
     row.appendChild(titleEl);
     row.appendChild(slugEl);
     row.appendChild(orderEl);
 
-    // Drag events on the row
-    row.addEventListener('dragstart', e => {
-      draggedId = id;
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', id);
-    });
-    row.addEventListener('dragend', () => {
-      row.classList.remove('over-before', 'over-after', 'over-child');
-    });
-    row.addEventListener('dragover', e => {
-      if (!draggedId || draggedId === id) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const pos = getDropPosition(e, row);
-      row.classList.remove('over-before', 'over-after', 'over-child');
-      row.classList.add(pos === 'before' ? 'over-before' : pos === 'after' ? 'over-after' : 'over-child');
-    });
-    row.addEventListener('dragleave', () => {
-      row.classList.remove('over-before', 'over-after', 'over-child');
-    });
-    row.addEventListener('drop', e => {
-      e.preventDefault();
-      row.classList.remove('over-before', 'over-after', 'over-child');
-      if (!draggedId) return;
-      const pos = getDropPosition(e, row);
-      applyDrop(draggedId, id, pos);
-      draggedId = null;
-      renderTree();
-      document.getElementById('save-btn').disabled = changes.size === 0;
-    });
+    // Drag events on the row (only wired up in edit order mode)
+    if (editOrderMode) {
+      row.addEventListener('dragstart', e => {
+        draggedId = id;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', id);
+      });
+      row.addEventListener('dragend', () => {
+        row.classList.remove('over-before', 'over-after', 'over-child');
+      });
+      row.addEventListener('dragover', e => {
+        if (!draggedId || draggedId === id) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const pos = getDropPosition(e, row);
+        row.classList.remove('over-before', 'over-after', 'over-child');
+        row.classList.add(pos === 'before' ? 'over-before' : pos === 'after' ? 'over-after' : 'over-child');
+      });
+      row.addEventListener('dragleave', () => {
+        row.classList.remove('over-before', 'over-after', 'over-child');
+      });
+      row.addEventListener('drop', e => {
+        e.preventDefault();
+        row.classList.remove('over-before', 'over-after', 'over-child');
+        if (!draggedId) return;
+        const pos = getDropPosition(e, row);
+        applyDrop(draggedId, id, pos);
+        draggedId = null;
+        renderTree();
+        document.getElementById('save-btn').disabled = changes.size === 0;
+      });
+    }
 
     li.appendChild(row);
 
-    // Children
-    const children = getSortedChildren(id);
-    if (children.length) {
+    // Children (omitted when collapsed)
+    if (hasChildren && !isCollapsed) {
       const ul = document.createElement('ul');
       ul.className = 'tree-children';
       for (const childId of children) {
@@ -377,6 +443,7 @@
       saveBtn.disabled = false;
     } else {
       changes.clear();
+      saveTreeStateToCache();
       statusEl.textContent = 'Saved. GitHub Actions will rebuild the wiki shortly.';
       statusEl.className = 'status success';
     }
@@ -396,6 +463,7 @@
 
     try {
       await loadData();
+      applyTreeStateCache(); // restore custom order if saved before last rebuild
     } catch (e) {
       statusEl.textContent = `Load error: ${e.message}`;
       statusEl.className = 'status error';
@@ -409,15 +477,32 @@
     }
 
     const pageCount = Object.keys(docMap).length;
-    statusEl.textContent = `${pageCount} pages loaded. Drag to reorder or reparent. Changed items appear in orange.`;
+    statusEl.textContent = `${pageCount} pages loaded. Click "Edit Order" to drag and reorder. Changed items appear in orange.`;
 
     renderTree();
     saveBtn.disabled = true;
     saveBtn.addEventListener('click', saveChanges);
 
+    // Collapse All
+    document.getElementById('collapse-btn').addEventListener('click', () => {
+      for (const id of Object.keys(treeState)) {
+        if (getSortedChildren(id).length > 0) collapsedIds.add(id);
+      }
+      renderTree();
+    });
+
+    // Edit Order toggle — enables drag-and-drop reordering
+    document.getElementById('edit-order-btn').addEventListener('click', () => {
+      editOrderMode = !editOrderMode;
+      document.getElementById('edit-order-btn').classList.toggle('active', editOrderMode);
+      document.getElementById('drop-root').style.display = editOrderMode ? '' : 'none';
+      renderTree();
+    });
+
     // Root drop zone
     const dropRoot = document.getElementById('drop-root');
     dropRoot.addEventListener('dragover', e => {
+      if (!editOrderMode) return;
       e.preventDefault();
       dropRoot.classList.add('active');
     });
@@ -425,7 +510,7 @@
     dropRoot.addEventListener('drop', e => {
       e.preventDefault();
       dropRoot.classList.remove('active');
-      if (!draggedId) return;
+      if (!draggedId || !editOrderMode) return;
       applyDropToRoot(draggedId);
       draggedId = null;
       renderTree();
