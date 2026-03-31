@@ -116,18 +116,14 @@ function renderDocList(data, container) {
     return;
   }
 
-  // Sort by last_updated (most recent first), tiebreak by file_mtime, then show only top 5
+  // Sort by file_mtime (precise numeric timestamp) for reliable recency ordering
   const sorted = [...data]
-    .sort((a, b) => {
-      const dateCmp = (b.last_updated || "").localeCompare(a.last_updated || "");
-      if (dateCmp !== 0) return dateCmp;
-      return (b.file_mtime || 0) - (a.file_mtime || 0);
-    })
+    .sort((a, b) => (b.file_mtime || 0) - (a.file_mtime || 0))
     .slice(0, 5);
 
   const html = sorted
     .map((doc) => {
-      const excerpt = (doc.excerpt || "").slice(0, WIKI_CONFIG.search.excerptLength);
+      const excerpt = (doc.body || doc.excerpt || "").slice(0, WIKI_CONFIG.search.excerptLength * 3);
       const excerptHtml = escapeHtml(excerpt).replace(/\n/g, " ");
       return `
       <article class="doc-card">
